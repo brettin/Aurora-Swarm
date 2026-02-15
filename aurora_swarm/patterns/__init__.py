@@ -1,0 +1,1 @@
+"""Aurora Swarm communication patterns."""
