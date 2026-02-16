@@ -76,7 +76,10 @@
         <span class="n">r</span><span class="o">.</span><span class="n">text</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">responses</span> <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">success</span>
     <span class="p">)</span>
     <span class="n">filled</span> <span class="o">=</span> <span class="n">reduce_prompt</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{responses}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">combined</span><span class="p">)</span>
-    <span class="k">return</span> <span class="k">await</span> <span class="n">pool</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">reducer_agent_index</span><span class="p">,</span> <span class="n">filled</span><span class="p">)</span></div>
+    
+    <span class="c1"># Use aggregation preset for reduce step (larger prompts)</span>
+    <span class="n">max_tokens</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">pool</span><span class="p">,</span> <span class="s2">&quot;_max_tokens_aggregation&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">return</span> <span class="k">await</span> <span class="n">pool</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">reducer_agent_index</span><span class="p">,</span> <span class="n">filled</span><span class="p">,</span> <span class="n">max_tokens</span><span class="o">=</span><span class="n">max_tokens</span><span class="p">)</span></div>
 
 </pre></div>
 
@@ -105,8 +108,9 @@
     </div>
 </search>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
-<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../context_length.html">Context length configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
 </ul>
 

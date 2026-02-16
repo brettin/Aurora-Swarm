@@ -8,7 +8,7 @@ Package (aurora_swarm)
 ~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: aurora_swarm
-   :members: AgentEndpoint, AgentPool, Response, parse_hostfile
+   :members: AgentEndpoint, AgentPool, Response, VLLMPool, parse_hostfile
    :undoc-members:
    :show-inheritance:
 
@@ -34,6 +34,17 @@ Pool
    :members:
    :undoc-members:
    :show-inheritance:
+
+VLLM pool
+~~~~~~~~~
+
+:class:`VLLMPool` is an :class:`~aurora_swarm.pool.AgentPool` subclass for vLLM OpenAI-compatible endpoints. It supports config-based and dynamic context length (see :doc:`context_length`).
+
+.. autoclass:: aurora_swarm.vllm_pool.VLLMPool
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :exclude-members: _get_model_max_context, _sub_pool
 
 Aggregators
 ~~~~~~~~~~~

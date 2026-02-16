@@ -135,11 +135,21 @@ class AgentPool:
 
     # -- core request --------------------------------------------------------
 
-    async def post(self, agent_index: int, prompt: str) -> Response:
+    async def post(self, agent_index: int, prompt: str, max_tokens: int | None = None) -> Response:
         """Send *prompt* to the agent at *agent_index* and return its response.
 
         The call is throttled by the pool-wide semaphore so that at most
         ``concurrency`` requests are in flight at once.
+
+        Parameters
+        ----------
+        agent_index:
+            Index of the agent to send the prompt to.
+        prompt:
+            The prompt text.
+        max_tokens:
+            Optional maximum tokens to generate. Ignored by base AgentPool
+            (only used by VLLMPool and subclasses).
         """
         ep = self._endpoints[agent_index]
         session = await self._get_session()

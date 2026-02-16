@@ -36,6 +36,7 @@ conda activate /lus/flare/projects/ModCon/brettin/conda_envs/swarm
 **Otherwise**, create and activate a local env:
 
 ```bash
+module load frameworks
 conda create -n aurora-swarm python=3.11 -y
 conda activate aurora-swarm
 ```
@@ -201,6 +202,58 @@ async def main():
         print(result.text)
 
 asyncio.run(main())
+```
+
+---
+
+## Configuration
+
+### Context Length Management
+
+Aurora Swarm intelligently manages `max_tokens` for different types of operations:
+
+**Dynamic Sizing** — Automatically adjusts `max_tokens` based on prompt length to prevent truncation:
+- Estimates prompt tokens (using a chars÷4 heuristic)
+- Queries vLLM's `/v1/models` endpoint to get the model's max context length
+- Computes: `max_tokens = min(cap, model_max - prompt_tokens - buffer)`
+
+**Aggregation Presets** — Uses larger token budgets for reduce/aggregation steps where prompts grow:
+- `max_tokens` (default): for simple broadcasts and leaf prompts
+- `max_tokens_aggregation`: for reduce steps (defaults to 2× `max_tokens`)
+
+### Environment Variables
+
+Configure context length via environment variables:
+
+```bash
+export AURORA_SWARM_MAX_TOKENS=1024              # Default max tokens
+export AURORA_SWARM_MAX_TOKENS_AGGREGATION=2048  # Aggregation/reduce steps
+export AURORA_SWARM_MODEL_MAX_CONTEXT=131072     # Model's max context (optional)
+```
+
+### VLLMPool Parameters
+
+```python
+from aurora_swarm import VLLMPool, AgentEndpoint
+
+pool = VLLMPool(
+    endpoints=[AgentEndpoint("host1", 8000), AgentEndpoint("host2", 8000)],
+    model="openai/gpt-oss-120b",
+    max_tokens=1024,                    # Default for simple prompts
+    max_tokens_aggregation=2048,        # For aggregation steps
+    model_max_context=131072,           # Optional: skip API query
+    buffer=512,                         # Safety margin for reasoning overhead
+    concurrency=512,
+    connector_limit=1024,
+    timeout=300.0,
+)
+```
+
+**Per-request override:**
+
+```python
+# Explicitly set max_tokens for a specific call
+response = await pool.post(agent_index=0, prompt="...", max_tokens=512)
 ```
 
 ---

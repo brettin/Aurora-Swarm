@@ -33,6 +33,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 
 MODEL = "openai/gpt-oss-120b"
 MAX_TOKENS = 1024
+MAX_TOKENS_AGGREGATION = 2048  # Larger budget for reduce/aggregation steps
 
 
 # ---------------------------------------------------------------------------
@@ -115,6 +116,7 @@ async def vllm_pool(hostfile_path) -> AsyncIterator[VLLMPool]:
         endpoints,
         model=MODEL,
         max_tokens=MAX_TOKENS,
+        max_tokens_aggregation=MAX_TOKENS_AGGREGATION,
         concurrency=64,
         connector_limit=128,
         timeout=300.0,
@@ -143,6 +145,7 @@ async def vllm_pool_tagged(hostfile_path) -> AsyncIterator[VLLMPool]:
         tagged,
         model=MODEL,
         max_tokens=MAX_TOKENS,
+        max_tokens_aggregation=MAX_TOKENS_AGGREGATION,
         concurrency=64,
         connector_limit=128,
         timeout=300.0,

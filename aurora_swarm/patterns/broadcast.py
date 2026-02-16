@@ -38,4 +38,7 @@ async def broadcast_and_reduce(
         r.text for r in responses if r.success
     )
     filled = reduce_prompt.replace("{responses}", combined)
-    return await pool.post(reducer_agent_index, filled)
+    
+    # Use aggregation preset for reduce step (larger prompts)
+    max_tokens = getattr(pool, "_max_tokens_aggregation", None)
+    return await pool.post(reducer_agent_index, filled, max_tokens=max_tokens)

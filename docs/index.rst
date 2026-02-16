@@ -51,8 +51,9 @@ Documentation
 
 .. toctree::
    :maxdepth: 2
-   :caption: API Reference
+   :caption: Contents
 
+   context_length
    api
 
 Indices and tables

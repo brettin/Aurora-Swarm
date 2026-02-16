@@ -190,11 +190,21 @@
 
 <div class="viewcode-block" id="AgentPool.post">
 <a class="viewcode-back" href="../../api.html#aurora_swarm.AgentPool.post">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">max_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Send *prompt* to the agent at *agent_index* and return its response.</span>
 
 <span class="sd">        The call is throttled by the pool-wide semaphore so that at most</span>
 <span class="sd">        ``concurrency`` requests are in flight at once.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        agent_index:</span>
+<span class="sd">            Index of the agent to send the prompt to.</span>
+<span class="sd">        prompt:</span>
+<span class="sd">            The prompt text.</span>
+<span class="sd">        max_tokens:</span>
+<span class="sd">            Optional maximum tokens to generate. Ignored by base AgentPool</span>
+<span class="sd">            (only used by VLLMPool and subclasses).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">ep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_endpoints</span><span class="p">[</span><span class="n">agent_index</span><span class="p">]</span>
         <span class="n">session</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_session</span><span class="p">()</span>
@@ -270,8 +280,9 @@
     </div>
 </search>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
-<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../context_length.html">Context length configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
 </ul>
 

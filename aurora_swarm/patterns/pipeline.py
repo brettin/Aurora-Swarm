@@ -128,4 +128,7 @@ async def fan_out_fan_in(
     responses = await worker_pool.broadcast_prompt(prompt)
     combined = "\n---\n".join(r.text for r in responses if r.success)
     filled = collect_prompt.replace("{responses}", combined)
-    return await pool.post(0, filled)
+    
+    # Use aggregation preset for collector (larger prompts)
+    max_tokens = getattr(pool, "_max_tokens_aggregation", None)
+    return await pool.post(0, filled, max_tokens=max_tokens)
