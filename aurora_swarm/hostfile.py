@@ -1,9 +1,9 @@
 """Hostfile parser for Aurora agent endpoints.
 
-Hostfile format — one agent per line::
+Hostfile format — one agent per line (tab-delimited)::
 
-    host1:8000 node=aurora-0001 role=worker
-    host2:8000 node=aurora-0002 role=critic
+    host1\t8000\tnode=aurora-0001\trole=worker
+    host2\t8000\tnode=aurora-0002\trole=critic
 
 Blank lines and lines starting with ``#`` are ignored.
 """
@@ -46,16 +46,18 @@ def parse_hostfile(path: str | Path) -> list[AgentEndpoint]:
             line = line.strip()
             if not line or line.startswith("#"):
                 continue
-            parts = line.split()
-            host_port = parts[0]
-            if ":" in host_port:
-                host, port_str = host_port.rsplit(":", 1)
-                port = int(port_str)
+            parts = line.split('\t')
+            host = parts[0]
+            # Port is in second column, defaults to 8000 if not provided
+            if len(parts) > 1 and parts[1].isdigit():
+                port = int(parts[1])
+                tag_start = 2
             else:
-                host = host_port
-                port = 8000  # default
+                port = 8000
+                tag_start = 1
+            # Parse optional tags from remaining columns
             tags: dict[str, str] = {}
-            for token in parts[1:]:
+            for token in parts[tag_start:]:
                 if "=" in token:
                     key, value = token.split("=", 1)
                     tags[key] = value

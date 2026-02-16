@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Context length configuration &#8212; Aurora Swarm</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=01f34227"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API Reference" href="api.html" />
+    <link rel="prev" title="Aurora Swarm" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="context-length-configuration">
+<h1>Context length configuration<a class="headerlink" href="#context-length-configuration" title="Link to this heading">¶</a></h1>
+<p>Aurora Swarm supports both <strong>config-based</strong> and <strong>dynamic</strong> context length management when using <a class="reference internal" href="api.html#aurora_swarm.vllm_pool.VLLMPool" title="aurora_swarm.vllm_pool.VLLMPool"><code class="xref py py-class docutils literal notranslate"><span class="pre">VLLMPool</span></code></a>.</p>
+<section id="config-based">
+<h2>Config-based<a class="headerlink" href="#config-based" title="Link to this heading">¶</a></h2>
+<p>Set default and aggregation token limits via environment variables or constructor parameters:</p>
+<p><strong>Environment variables:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">AURORA_SWARM_MAX_TOKENS</span></code> — default max tokens (e.g. 512)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">AURORA_SWARM_MAX_TOKENS_AGGREGATION</span></code> — for aggregation/reduce steps (e.g. 2048)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">AURORA_SWARM_MODEL_MAX_CONTEXT</span></code> — model’s max context length (optional; if unset, fetched from vLLM <code class="docutils literal notranslate"><span class="pre">/v1/models</span></code>)</p></li>
+</ul>
+<p><strong>Constructor (priority over env):</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aurora_swarm</span><span class="w"> </span><span class="kn">import</span> <span class="n">VLLMPool</span><span class="p">,</span> <span class="n">AgentEndpoint</span>
+
+<span class="n">pool</span> <span class="o">=</span> <span class="n">VLLMPool</span><span class="p">(</span>
+    <span class="n">endpoints</span><span class="o">=</span><span class="p">[</span><span class="n">AgentEndpoint</span><span class="p">(</span><span class="s2">&quot;host1&quot;</span><span class="p">,</span> <span class="mi">8000</span><span class="p">)],</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;openai/gpt-oss-120b&quot;</span><span class="p">,</span>
+    <span class="n">max_tokens</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+    <span class="n">max_tokens_aggregation</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span>
+    <span class="n">model_max_context</span><span class="o">=</span><span class="mi">131072</span><span class="p">,</span>  <span class="c1"># optional; skip API query</span>
+    <span class="n">buffer</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Per-request override:</strong> pass <code class="docutils literal notranslate"><span class="pre">max_tokens</span></code> to <a class="reference internal" href="api.html#aurora_swarm.vllm_pool.VLLMPool.post" title="aurora_swarm.vllm_pool.VLLMPool.post"><code class="xref py py-meth docutils literal notranslate"><span class="pre">post()</span></code></a> for a single call.</p>
+</section>
+<section id="dynamic-sizing">
+<h2>Dynamic sizing<a class="headerlink" href="#dynamic-sizing" title="Link to this heading">¶</a></h2>
+<p>When <code class="docutils literal notranslate"><span class="pre">max_tokens</span></code> is not passed to <a class="reference internal" href="api.html#aurora_swarm.vllm_pool.VLLMPool.post" title="aurora_swarm.vllm_pool.VLLMPool.post"><code class="xref py py-meth docutils literal notranslate"><span class="pre">post()</span></code></a>, the pool computes a safe value:</p>
+<ul class="simple">
+<li><p>Fetches the model’s max context from vLLM <code class="docutils literal notranslate"><span class="pre">/v1/models</span></code> (cached)</p></li>
+<li><p>Estimates prompt tokens (e.g. <code class="docutils literal notranslate"><span class="pre">len(prompt)</span> <span class="pre">//</span> <span class="pre">4</span></code>)</p></li>
+<li><p>Uses <code class="docutils literal notranslate"><span class="pre">min(configured_cap,</span> <span class="pre">model_max</span> <span class="pre">-</span> <span class="pre">prompt_est</span> <span class="pre">-</span> <span class="pre">buffer)</span></code> so responses are not truncated</p></li>
+</ul>
+<p>Aggregation steps in patterns (e.g. <a class="reference internal" href="api.html#aurora_swarm.patterns.broadcast.broadcast_and_reduce" title="aurora_swarm.patterns.broadcast.broadcast_and_reduce"><code class="xref py py-func docutils literal notranslate"><span class="pre">broadcast_and_reduce()</span></code></a> reduce step, pipeline stages 2+) use <code class="docutils literal notranslate"><span class="pre">max_tokens_aggregation</span></code> when the pool provides it.</p>
+<p>Full details, examples, and reasoning-model notes are in the repo: <code class="docutils literal notranslate"><span class="pre">CONTEXT_LENGTH.md</span></code>.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Aurora Swarm</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Context length configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#config-based">Config-based</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dynamic-sizing">Dynamic sizing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Aurora Swarm</a></li>
+      <li>Next: <a href="api.html" title="next chapter">API Reference</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;Aurora Swarm contributors.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/context_length.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

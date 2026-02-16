@@ -171,6 +171,26 @@ class VLLMPool(AgentPool):
                     timeout=aiohttp.ClientTimeout(total=self._timeout),
                 ) as resp:
                     data = await resp.json()
+                    
+                    # Check for error response
+                    if resp.status != 200:
+                        error_msg = data.get("error", {}).get("message", f"HTTP {resp.status}")
+                        return Response(
+                            success=False,
+                            text="",
+                            error=f"API error: {error_msg}",
+                            agent_index=agent_index,
+                        )
+                    
+                    # Check for expected response structure
+                    if "choices" not in data or not data["choices"]:
+                        return Response(
+                            success=False,
+                            text="",
+                            error=f"Invalid response structure: {list(data.keys())}",
+                            agent_index=agent_index,
+                        )
+                    
                     message = data["choices"][0]["message"]
                     text = message.get("content") or message.get("reasoning_content") or ""
                     return Response(
@@ -182,7 +202,7 @@ class VLLMPool(AgentPool):
                 return Response(
                     success=False,
                     text="",
-                    error=str(exc),
+                    error=f"{type(exc).__name__}: {str(exc)}",
                     agent_index=agent_index,
                 )
 
