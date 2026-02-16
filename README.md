@@ -84,7 +84,13 @@ Aurora-Swarm/
 │   ├── test_scatter_gather.py
 │   ├── test_tree_reduce.py
 │   ├── test_blackboard.py
-│   └── test_pipeline.py
+│   ├── test_pipeline.py
+│   └── integration/          # Integration tests
+│       ├── test_broadcast.py
+│       ├── test_scatter_gather.py
+│       ├── test_tree_reduce.py
+│       ├── test_blackboard.py
+│       └── test_pipeline.py
 └── pyproject.toml
 ```
 
