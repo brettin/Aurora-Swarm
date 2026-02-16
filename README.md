@@ -4,6 +4,8 @@ Communication patterns for orchestrating large-scale LLM agent swarms on Aurora.
 
 Aurora Swarm provides an async Python library for coordinating thousands of LLM agent endpoints using common distributed communication patterns — broadcast, scatter-gather, tree-reduce, blackboard, and multi-stage pipelines. It manages pooled HTTP connections with semaphore-based concurrency control so you can safely drive 1,000–4,000+ agents from a single orchestrator process.
 
+**API reference (GitHub Pages):** [https://brettin.github.io/Aurora-Swarm/](https://brettin.github.io/Aurora-Swarm/)
+
 ---
 
 ## Getting Started
@@ -71,7 +73,9 @@ The tests spin up lightweight mock HTTP servers on localhost so no external agen
 
 ### 7. Build and view the documentation (optional)
 
-On HPC, load the environment before installing:
+Published docs are at **https://brettin.github.io/Aurora-Swarm/** (built and deployed from `main` via GitHub Actions). In repo **Settings → Pages**, set "Build and deployment" source to **GitHub Actions** if it is not already.
+
+To build and view locally (on HPC, load the environment first):
 
 ```bash
 module load frameworks
