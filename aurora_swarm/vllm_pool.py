@@ -58,27 +58,30 @@ class VLLMPool(AgentPool):
         concurrency: int = 512,
         connector_limit: int = 1024,
         timeout: float = 300.0,
+        proxy_url: str | None = None,
     ) -> None:
         super().__init__(
             endpoints,
             concurrency=concurrency,
             connector_limit=connector_limit,
             timeout=timeout,
+            proxy_url=proxy_url,
         )
         self._model = model
-        
+
         # Load from environment with fallbacks
-        self._max_tokens = (
-            max_tokens
-            or int(os.environ.get("AURORA_SWARM_MAX_TOKENS", "512"))
+        self._max_tokens = max_tokens or int(
+            os.environ.get("AURORA_SWARM_MAX_TOKENS", "512")
         )
-        self._max_tokens_aggregation = (
-            max_tokens_aggregation
-            or int(os.environ.get("AURORA_SWARM_MAX_TOKENS_AGGREGATION", str(self._max_tokens * 2)))
+        self._max_tokens_aggregation = max_tokens_aggregation or int(
+            os.environ.get(
+                "AURORA_SWARM_MAX_TOKENS_AGGREGATION", str(self._max_tokens * 2)
+            )
         )
-        self._model_max_context = (
-            model_max_context
-            or (int(os.environ["AURORA_SWARM_MODEL_MAX_CONTEXT"]) if "AURORA_SWARM_MODEL_MAX_CONTEXT" in os.environ else None)
+        self._model_max_context = model_max_context or (
+            int(os.environ["AURORA_SWARM_MODEL_MAX_CONTEXT"])
+            if "AURORA_SWARM_MODEL_MAX_CONTEXT" in os.environ
+            else None
         )
         self._buffer = buffer
         self._model_max_context_cached: int | None = None
@@ -87,24 +90,24 @@ class VLLMPool(AgentPool):
 
     async def _get_model_max_context(self) -> int:
         """Fetch the model's max context length from vLLM /v1/models endpoint.
-        
+
         Cached after first call. Returns a sensible default if fetch fails.
         """
         # Return cached value if available
         if self._model_max_context_cached is not None:
             return self._model_max_context_cached
-        
+
         # Return explicitly configured value
         if self._model_max_context is not None:
             self._model_max_context_cached = self._model_max_context
             return self._model_max_context
-        
+
         # Fetch from vLLM API
         try:
-            ep = self._endpoints[0]
             session = await self._get_session()
+            url = f"{self._agent_base_url(0)}/v1/models"
             async with session.get(
-                f"{ep.url}/v1/models",
+                url,
                 timeout=aiohttp.ClientTimeout(total=10.0),
             ) as resp:
                 data = await resp.json()
@@ -117,14 +120,16 @@ class VLLMPool(AgentPool):
                             return max_len
         except Exception:
             pass  # Fall back to default
-        
+
         # Default fallback (131072 is common for many models)
         self._model_max_context_cached = 131072
         return self._model_max_context_cached
 
     # -- core request (OpenAI chat completions) ------------------------------
 
-    async def post(self, agent_index: int, prompt: str, max_tokens: int | None = None) -> Response:
+    async def post(
+        self, agent_index: int, prompt: str, max_tokens: int | None = None
+    ) -> Response:
         """Send *prompt* via the OpenAI chat-completions API on the agent.
 
         The prompt is wrapped as a single ``user`` message.
@@ -139,30 +144,29 @@ class VLLMPool(AgentPool):
             Optional override for max tokens. If None, uses dynamic sizing
             based on prompt length and model context limit.
         """
-        ep = self._endpoints[agent_index]
         session = await self._get_session()
-        
+        url = f"{self._agent_base_url(agent_index)}/v1/chat/completions"
+
         # Compute max_tokens dynamically if not explicitly provided
         if max_tokens is None:
             # Get model's max context length
             model_max = await self._get_model_max_context()
-            
+
             # Estimate prompt tokens (rough heuristic: 1 token ≈ 4 chars)
             prompt_est = len(prompt) // 4
-            
+
             # Dynamic sizing: never exceed model capacity
             # Use default max_tokens as the preferred cap
             tokens = min(
-                self._max_tokens,
-                max(128, model_max - prompt_est - self._buffer)
+                self._max_tokens, max(128, model_max - prompt_est - self._buffer)
             )
         else:
             tokens = max_tokens
-        
+
         async with self._semaphore:
             try:
                 async with session.post(
-                    f"{ep.url}/v1/chat/completions",
+                    url,
                     json={
                         "model": self._model,
                         "messages": [{"role": "user", "content": prompt}],
@@ -171,17 +175,19 @@ class VLLMPool(AgentPool):
                     timeout=aiohttp.ClientTimeout(total=self._timeout),
                 ) as resp:
                     data = await resp.json()
-                    
+
                     # Check for error response
                     if resp.status != 200:
-                        error_msg = data.get("error", {}).get("message", f"HTTP {resp.status}")
+                        error_msg = data.get("error", {}).get(
+                            "message", f"HTTP {resp.status}"
+                        )
                         return Response(
                             success=False,
                             text="",
                             error=f"API error: {error_msg}",
                             agent_index=agent_index,
                         )
-                    
+
                     # Check for expected response structure
                     if "choices" not in data or not data["choices"]:
                         return Response(
@@ -190,9 +196,11 @@ class VLLMPool(AgentPool):
                             error=f"Invalid response structure: {list(data.keys())}",
                             agent_index=agent_index,
                         )
-                    
+
                     message = data["choices"][0]["message"]
-                    text = message.get("content") or message.get("reasoning_content") or ""
+                    text = (
+                        message.get("content") or message.get("reasoning_content") or ""
+                    )
                     return Response(
                         success=True,
                         text=text,
@@ -208,8 +216,18 @@ class VLLMPool(AgentPool):
 
     # -- sub-pool override ---------------------------------------------------
 
-    def _sub_pool(self, endpoints: list[AgentEndpoint]) -> "VLLMPool":
-        """Create a child VLLMPool sharing concurrency settings."""
+    def _sub_pool(
+        self,
+        endpoints: list[AgentEndpoint],
+        global_indices: list[int] | None = None,
+    ) -> "VLLMPool":
+        """Create a child VLLMPool sharing concurrency settings.
+
+        Args:
+            endpoints: The endpoints for the child pool.
+            global_indices: Global index mapping for proxy routing. If None,
+                defaults to ``list(range(len(endpoints)))``.
+        """
         child = VLLMPool.__new__(VLLMPool)
         child._endpoints = endpoints
         child._concurrency = self._concurrency
@@ -217,6 +235,12 @@ class VLLMPool(AgentPool):
         child._timeout = self._timeout
         child._semaphore = self._semaphore
         child._session = self._session
+        child._proxy_url = self._proxy_url
+        child._global_indices = (
+            global_indices
+            if global_indices is not None
+            else list(range(len(endpoints)))
+        )
         child._model = self._model
         child._max_tokens = self._max_tokens
         child._max_tokens_aggregation = self._max_tokens_aggregation
