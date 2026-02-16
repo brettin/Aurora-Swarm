@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>aurora_swarm.patterns.broadcast &#8212; Aurora Swarm</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for aurora_swarm.patterns.broadcast</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Pattern 1 — Broadcast.</span>
+
+<span class="sd">Send the identical prompt to every agent and collect all responses.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">aurora_swarm.pool</span><span class="w"> </span><span class="kn">import</span> <span class="n">AgentPool</span><span class="p">,</span> <span class="n">Response</span>
+
+
+<div class="viewcode-block" id="broadcast">
+<a class="viewcode-back" href="../../../api.html#aurora_swarm.patterns.broadcast.broadcast">[docs]</a>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">broadcast</span><span class="p">(</span><span class="n">pool</span><span class="p">:</span> <span class="n">AgentPool</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Response</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Send *prompt* to every agent in *pool*, return all responses in order.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="k">await</span> <span class="n">pool</span><span class="o">.</span><span class="n">broadcast_prompt</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="broadcast_and_reduce">
+<a class="viewcode-back" href="../../../api.html#aurora_swarm.patterns.broadcast.broadcast_and_reduce">[docs]</a>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">broadcast_and_reduce</span><span class="p">(</span>
+    <span class="n">pool</span><span class="p">:</span> <span class="n">AgentPool</span><span class="p">,</span>
+    <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">reduce_prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">reducer_agent_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Two-phase broadcast: gather all responses, then reduce with one agent.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pool:</span>
+<span class="sd">        The agent pool to broadcast to.</span>
+<span class="sd">    prompt:</span>
+<span class="sd">        The prompt sent to every agent.</span>
+<span class="sd">    reduce_prompt:</span>
+<span class="sd">        A template string containing ``{responses}`` which will be</span>
+<span class="sd">        replaced with the concatenated agent outputs.</span>
+<span class="sd">    reducer_agent_index:</span>
+<span class="sd">        Index of the agent (within *pool*) used for the reduction step.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">responses</span> <span class="o">=</span> <span class="k">await</span> <span class="n">pool</span><span class="o">.</span><span class="n">broadcast_prompt</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
+    <span class="n">combined</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">---</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">text</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">responses</span> <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">success</span>
+    <span class="p">)</span>
+    <span class="n">filled</span> <span class="o">=</span> <span class="n">reduce_prompt</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{responses}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">combined</span><span class="p">)</span>
+    <span class="k">return</span> <span class="k">await</span> <span class="n">pool</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">reducer_agent_index</span><span class="p">,</span> <span class="n">filled</span><span class="p">)</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Aurora Swarm</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;Aurora Swarm contributors.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

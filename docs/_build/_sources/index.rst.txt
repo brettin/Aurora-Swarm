@@ -1,0 +1,63 @@
+Aurora Swarm
+============
+
+Communication patterns for orchestrating large-scale LLM agent swarms on Aurora.
+
+Aurora Swarm provides an async Python library for coordinating thousands of LLM agent endpoints using common distributed communication patterns — **broadcast**, **scatter-gather**, **tree-reduce**, **blackboard**, and **multi-stage pipelines**. It manages pooled HTTP connections with semaphore-based concurrency control so you can safely drive 1,000–4,000+ agents from a single orchestrator process.
+
+Quick start
+-----------
+
+.. code-block:: python
+
+   import asyncio
+   from aurora_swarm import AgentPool, parse_hostfile
+   from aurora_swarm.patterns.broadcast import broadcast_and_reduce
+
+   async def main():
+       endpoints = parse_hostfile("agents.hostfile")
+       async with AgentPool(endpoints) as pool:
+           result = await broadcast_and_reduce(
+               pool,
+               prompt="Propose a hypothesis for why X happens.",
+               reduce_prompt="Summarize these hypotheses:\n{responses}",
+           )
+           print(result.text)
+
+   asyncio.run(main())
+
+Communication patterns
+----------------------
+
+.. list-table:: Communication patterns
+   :header-rows: 1
+   :widths: 20 80
+
+   * - Pattern
+     - Description
+   * - **Broadcast**
+     - Send the same prompt to every agent and collect all responses.
+   * - **Scatter-Gather**
+     - Distribute different prompts across agents round-robin and gather results in input order.
+   * - **Tree-Reduce**
+     - Leaf agents produce answers; supervisors recursively summarize groups.
+   * - **Blackboard**
+     - Agents collaborate through a shared mutable workspace in iterative rounds until convergence.
+   * - **Pipeline**
+     - Multi-stage DAG where the output of one stage feeds the next.
+
+Documentation
+-------------
+
+.. toctree::
+   :maxdepth: 2
+   :caption: API Reference
+
+   api
+
+Indices and tables
+------------------
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

@@ -23,6 +23,15 @@ cd Aurora-Swarm
 
 ### 2. Create and activate a Conda environment
 
+**On HPC (e.g. Aurora):** load the frameworks module and activate the project conda env before any `pip install`:
+
+```bash
+module load frameworks
+conda activate /lus/flare/projects/ModCon/brettin/conda_envs/swarm
+```
+
+**Otherwise**, create and activate a local env:
+
 ```bash
 conda create -n aurora-swarm python=3.11 -y
 conda activate aurora-swarm
@@ -60,6 +69,18 @@ pytest -v
 
 The tests spin up lightweight mock HTTP servers on localhost so no external agents are needed.
 
+### 7. Build and view the documentation (optional)
+
+On HPC, load the environment before installing:
+
+```bash
+module load frameworks
+conda activate /lus/flare/projects/ModCon/brettin/conda_envs/swarm
+pip install -e ".[docs]"
+cd docs && make html && cd ..   # output in docs/_build/
+# then open docs/_build/index.html in a browser
+```
+
 ---
 
 ## Project Structure
@@ -91,6 +112,12 @@ Aurora-Swarm/
 │       ├── test_tree_reduce.py
 │       ├── test_blackboard.py
 │       └── test_pipeline.py
+├── docs/
+│   ├── conf.py                # Sphinx configuration
+│   ├── index.rst               # Landing page
+│   ├── api.rst                 # API reference (autodoc)
+│   ├── Makefile                # make html
+│   └── _build/                 # make html output
 └── pyproject.toml
 ```
 
@@ -180,4 +207,5 @@ asyncio.run(main())
 | Python | >= 3.11 |
 | Core dependency | `aiohttp >= 3.9` |
 | Dev dependencies | `pytest >= 8.0`, `pytest-asyncio >= 0.23` |
+| Docs (optional) | `pip install -e ".[docs]"` — Sphinx API reference |
 | Build backend | `setuptools >= 68.0` |

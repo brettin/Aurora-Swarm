@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>aurora_swarm.aggregators &#8212; Aurora Swarm</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for aurora_swarm.aggregators</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Aggregation strategies for agent responses.</span>
+
+<span class="sd">Every aggregator silently skips responses with ``success=False`` unless</span>
+<span class="sd">``include_failures=True`` is passed.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">statistics</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_stats</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">Counter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Sequence</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">aurora_swarm.pool</span><span class="w"> </span><span class="kn">import</span> <span class="n">Response</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_ok</span><span class="p">(</span><span class="n">responses</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Response</span><span class="p">],</span> <span class="n">include_failures</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Response</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Filter to successful responses unless explicitly including failures.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">include_failures</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">responses</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">responses</span> <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">success</span><span class="p">]</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Categorical</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<div class="viewcode-block" id="majority_vote">
+<a class="viewcode-back" href="../../api.html#aurora_swarm.aggregators.majority_vote">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">majority_vote</span><span class="p">(</span>
+    <span class="n">responses</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Response</span><span class="p">],</span>
+    <span class="n">include_failures</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return ``(winner, confidence)`` where *confidence* is the vote fraction.</span>
+
+<span class="sd">    Responses are stripped and compared case-insensitively.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">good</span> <span class="o">=</span> <span class="n">_ok</span><span class="p">(</span><span class="n">responses</span><span class="p">,</span> <span class="n">include_failures</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">good</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">good</span><span class="p">)</span>
+    <span class="n">winner</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">counts</span><span class="o">.</span><span class="n">most_common</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">winner</span><span class="p">,</span> <span class="n">n</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">good</span><span class="p">))</span></div>
+
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Text</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<div class="viewcode-block" id="concat">
+<a class="viewcode-back" href="../../api.html#aurora_swarm.aggregators.concat">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">concat</span><span class="p">(</span>
+    <span class="n">responses</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Response</span><span class="p">],</span>
+    <span class="n">separator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">include_failures</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Join all response texts with *separator*.&quot;&quot;&quot;</span>
+    <span class="n">good</span> <span class="o">=</span> <span class="n">_ok</span><span class="p">(</span><span class="n">responses</span><span class="p">,</span> <span class="n">include_failures</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">separator</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">text</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">good</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Quality selection</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<div class="viewcode-block" id="best_of">
+<a class="viewcode-back" href="../../api.html#aurora_swarm.aggregators.best_of">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">best_of</span><span class="p">(</span>
+    <span class="n">responses</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Response</span><span class="p">],</span>
+    <span class="n">score_fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Response</span><span class="p">],</span> <span class="nb">float</span><span class="p">],</span>
+    <span class="n">include_failures</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the single highest-scoring response.&quot;&quot;&quot;</span>
+    <span class="n">good</span> <span class="o">=</span> <span class="n">_ok</span><span class="p">(</span><span class="n">responses</span><span class="p">,</span> <span class="n">include_failures</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">good</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">success</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="s2">&quot;No responses to select from&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">good</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">score_fn</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="top_k">
+<a class="viewcode-back" href="../../api.html#aurora_swarm.aggregators.top_k">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">top_k</span><span class="p">(</span>
+    <span class="n">responses</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Response</span><span class="p">],</span>
+    <span class="n">k</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">score_fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Response</span><span class="p">],</span> <span class="nb">float</span><span class="p">],</span>
+    <span class="n">include_failures</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Response</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the *k* highest-scoring responses (descending).&quot;&quot;&quot;</span>
+    <span class="n">good</span> <span class="o">=</span> <span class="n">_ok</span><span class="p">(</span><span class="n">responses</span><span class="p">,</span> <span class="n">include_failures</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">good</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">score_fn</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)[:</span><span class="n">k</span><span class="p">]</span></div>
+
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Structured data</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<div class="viewcode-block" id="structured_merge">
+<a class="viewcode-back" href="../../api.html#aurora_swarm.aggregators.structured_merge">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">structured_merge</span><span class="p">(</span>
+    <span class="n">responses</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Response</span><span class="p">],</span>
+    <span class="n">include_failures</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse each response as JSON and merge into a flat list.</span>
+
+<span class="sd">    Returns ``(merged_list, errors)`` where *errors* captures parse</span>
+<span class="sd">    failures with the agent index and error message.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">good</span> <span class="o">=</span> <span class="n">_ok</span><span class="p">(</span><span class="n">responses</span><span class="p">,</span> <span class="n">include_failures</span><span class="p">)</span>
+    <span class="n">merged</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">errors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">good</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">merged</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">merged</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;agent_index&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">agent_index</span><span class="p">,</span> <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)})</span>
+    <span class="k">return</span> <span class="n">merged</span><span class="p">,</span> <span class="n">errors</span></div>
+
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Numeric</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<div class="viewcode-block" id="statistics">
+<a class="viewcode-back" href="../../api.html#aurora_swarm.aggregators.statistics">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">statistics</span><span class="p">(</span>
+    <span class="n">responses</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Response</span><span class="p">],</span>
+    <span class="n">extract_fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Response</span><span class="p">],</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">include_failures</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute summary statistics over numeric response values.</span>
+
+<span class="sd">    If *extract_fn* is ``None``, response text is converted to float</span>
+<span class="sd">    directly.</span>
+
+<span class="sd">    Returns dict with keys ``mean``, ``std``, ``median``, ``min``, ``max``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">good</span> <span class="o">=</span> <span class="n">_ok</span><span class="p">(</span><span class="n">responses</span><span class="p">,</span> <span class="n">include_failures</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">extract_fn</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">good</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="n">extract_fn</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">good</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">values</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;std&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;median&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">}</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="n">_stats</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">&quot;std&quot;</span><span class="p">:</span> <span class="n">_stats</span><span class="o">.</span><span class="n">stdev</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="s2">&quot;median&quot;</span><span class="p">:</span> <span class="n">_stats</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="nb">min</span><span class="p">(</span><span class="n">values</span><span class="p">),</span>
+        <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="nb">max</span><span class="p">(</span><span class="n">values</span><span class="p">),</span>
+    <span class="p">}</span></div>
+
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Diagnostics</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<div class="viewcode-block" id="failure_report">
+<a class="viewcode-back" href="../../api.html#aurora_swarm.aggregators.failure_report">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">failure_report</span><span class="p">(</span><span class="n">responses</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Response</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a diagnostic summary of successes and failures.</span>
+
+<span class="sd">    Keys: ``total``, ``success_count``, ``failure_count``, ``failures``</span>
+<span class="sd">    (list of ``{agent_index, error}`` dicts).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">responses</span><span class="p">)</span>
+    <span class="n">failures</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s2">&quot;agent_index&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">agent_index</span><span class="p">,</span> <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">error</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">responses</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">r</span><span class="o">.</span><span class="n">success</span>
+    <span class="p">]</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;total&quot;</span><span class="p">:</span> <span class="n">total</span><span class="p">,</span>
+        <span class="s2">&quot;success_count&quot;</span><span class="p">:</span> <span class="n">total</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">failures</span><span class="p">),</span>
+        <span class="s2">&quot;failure_count&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">failures</span><span class="p">),</span>
+        <span class="s2">&quot;failures&quot;</span><span class="p">:</span> <span class="n">failures</span><span class="p">,</span>
+    <span class="p">}</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">Aurora Swarm</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;Aurora Swarm contributors.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

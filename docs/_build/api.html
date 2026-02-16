@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>API Reference &#8212; Aurora Swarm</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=01f34227"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Aurora Swarm" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="api-reference">
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading">¶</a></h1>
+<section id="core">
+<h2>Core<a class="headerlink" href="#core" title="Link to this heading">¶</a></h2>
+<section id="module-aurora_swarm">
+<span id="package-aurora-swarm"></span><h3>Package (aurora_swarm)<a class="headerlink" href="#module-aurora_swarm" title="Link to this heading">¶</a></h3>
+<p>Aurora Swarm — communication patterns for large-scale LLM agent orchestration.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="aurora_swarm.AgentEndpoint">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">aurora_swarm.</span></span><span class="sig-name descname"><span class="pre">AgentEndpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tags</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/hostfile.html#AgentEndpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.AgentEndpoint" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A single agent’s network address plus optional metadata tags.</p>
+<dl class="field-list simple">
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="aurora_swarm.AgentEndpoint.host">
+<span class="sig-name descname"><span class="pre">host</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#aurora_swarm.AgentEndpoint.host" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="aurora_swarm.AgentEndpoint.port">
+<span class="sig-name descname"><span class="pre">port</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#aurora_swarm.AgentEndpoint.port" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="aurora_swarm.AgentEndpoint.tags">
+<span class="sig-name descname"><span class="pre">tags</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#aurora_swarm.AgentEndpoint.tags" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="aurora_swarm.AgentEndpoint.url">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">url</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#aurora_swarm.AgentEndpoint.url" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="aurora_swarm.AgentPool">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">aurora_swarm.</span></span><span class="sig-name descname"><span class="pre">AgentPool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">endpoints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concurrency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">512</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connector_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">120.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/pool.html#AgentPool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.AgentPool" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Async pool of agent HTTP endpoints with concurrency control.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>endpoints</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code>[<a class="reference internal" href="#aurora_swarm.hostfile.AgentEndpoint" title="aurora_swarm.hostfile.AgentEndpoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">AgentEndpoint</span></code></a> | <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]]</span>) – Agent endpoints — either <a class="reference internal" href="#aurora_swarm.AgentEndpoint" title="aurora_swarm.AgentEndpoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">AgentEndpoint</span></code></a> objects or plain
+<code class="docutils literal notranslate"><span class="pre">(host,</span> <span class="pre">port)</span></code> tuples (tags will be empty).</p></li>
+<li><p><strong>concurrency</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Maximum number of in-flight requests (asyncio semaphore size).</p></li>
+<li><p><strong>connector_limit</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Maximum number of TCP connections in the aiohttp pool.</p></li>
+<li><p><strong>timeout</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Per-request timeout in seconds.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="aurora_swarm.AgentPool.close">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/pool.html#AgentPool.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.AgentPool.close" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="aurora_swarm.AgentPool.size">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">size</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#aurora_swarm.AgentPool.size" title="Link to this definition">¶</a></dt>
+<dd><p>Number of agents in the pool.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="aurora_swarm.AgentPool.endpoints">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">endpoints</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#aurora_swarm.hostfile.AgentEndpoint" title="aurora_swarm.hostfile.AgentEndpoint"><span class="pre">AgentEndpoint</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#aurora_swarm.AgentPool.endpoints" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="aurora_swarm.AgentPool.by_tag">
+<span class="sig-name descname"><span class="pre">by_tag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/pool.html#AgentPool.by_tag"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.AgentPool.by_tag" title="Link to this definition">¶</a></dt>
+<dd><p>Return a sub-pool of agents whose tag <em>key</em> equals <em>value</em>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#aurora_swarm.pool.AgentPool" title="aurora_swarm.pool.AgentPool"><code class="xref py py-class docutils literal notranslate"><span class="pre">AgentPool</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="aurora_swarm.AgentPool.sample">
+<span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/pool.html#AgentPool.sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.AgentPool.sample" title="Link to this definition">¶</a></dt>
+<dd><p>Return a sub-pool of <em>n</em> randomly chosen agents.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#aurora_swarm.pool.AgentPool" title="aurora_swarm.pool.AgentPool"><code class="xref py py-class docutils literal notranslate"><span class="pre">AgentPool</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="aurora_swarm.AgentPool.select">
+<span class="sig-name descname"><span class="pre">select</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/pool.html#AgentPool.select"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.AgentPool.select" title="Link to this definition">¶</a></dt>
+<dd><p>Return a sub-pool with agents at the given indices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#aurora_swarm.pool.AgentPool" title="aurora_swarm.pool.AgentPool"><code class="xref py py-class docutils literal notranslate"><span class="pre">AgentPool</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="aurora_swarm.AgentPool.slice">
+<span class="sig-name descname"><span class="pre">slice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/pool.html#AgentPool.slice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.AgentPool.slice" title="Link to this definition">¶</a></dt>
+<dd><p>Return a sub-pool from index <em>start</em> to <em>stop</em>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#aurora_swarm.pool.AgentPool" title="aurora_swarm.pool.AgentPool"><code class="xref py py-class docutils literal notranslate"><span class="pre">AgentPool</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="aurora_swarm.AgentPool.post">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">post</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agent_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/pool.html#AgentPool.post"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.AgentPool.post" title="Link to this definition">¶</a></dt>
+<dd><p>Send <em>prompt</em> to the agent at <em>agent_index</em> and return its response.</p>
+<p>The call is throttled by the pool-wide semaphore so that at most
+<code class="docutils literal notranslate"><span class="pre">concurrency</span></code> requests are in flight at once.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#aurora_swarm.pool.Response" title="aurora_swarm.pool.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="aurora_swarm.AgentPool.send_all">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">send_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/pool.html#AgentPool.send_all"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.AgentPool.send_all" title="Link to this definition">¶</a></dt>
+<dd><p>Send <code class="docutils literal notranslate"><span class="pre">prompts[i]</span></code> to <code class="docutils literal notranslate"><span class="pre">agent[i</span> <span class="pre">%</span> <span class="pre">size]</span></code> concurrently.</p>
+<p>Returns responses in <em>input</em> order (i.e. <code class="docutils literal notranslate"><span class="pre">results[i]</span></code>
+corresponds to <code class="docutils literal notranslate"><span class="pre">prompts[i]</span></code>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<a class="reference internal" href="#aurora_swarm.pool.Response" title="aurora_swarm.pool.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="aurora_swarm.AgentPool.broadcast_prompt">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">broadcast_prompt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/pool.html#AgentPool.broadcast_prompt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.AgentPool.broadcast_prompt" title="Link to this definition">¶</a></dt>
+<dd><p>Send the same <em>prompt</em> to every agent in the pool.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<a class="reference internal" href="#aurora_swarm.pool.Response" title="aurora_swarm.pool.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="aurora_swarm.Response">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">aurora_swarm.</span></span><span class="sig-name descname"><span class="pre">Response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">success</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/pool.html#Response"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.Response" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Result of a single agent call.</p>
+<dl class="field-list simple">
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="aurora_swarm.Response.success">
+<span class="sig-name descname"><span class="pre">success</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></span><a class="headerlink" href="#aurora_swarm.Response.success" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="aurora_swarm.Response.text">
+<span class="sig-name descname"><span class="pre">text</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#aurora_swarm.Response.text" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="aurora_swarm.Response.error">
+<span class="sig-name descname"><span class="pre">error</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#aurora_swarm.Response.error" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="aurora_swarm.Response.agent_index">
+<span class="sig-name descname"><span class="pre">agent_index</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1</span></span><a class="headerlink" href="#aurora_swarm.Response.agent_index" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="aurora_swarm.parse_hostfile">
+<span class="sig-prename descclassname"><span class="pre">aurora_swarm.</span></span><span class="sig-name descname"><span class="pre">parse_hostfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/hostfile.html#parse_hostfile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.parse_hostfile" title="Link to this definition">¶</a></dt>
+<dd><p>Parse a hostfile and return a list of <a class="reference internal" href="#aurora_swarm.AgentEndpoint" title="aurora_swarm.AgentEndpoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">AgentEndpoint</span></code></a> objects.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></span>) – Path to the hostfile.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Parsed endpoints in file order.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="#aurora_swarm.AgentEndpoint" title="aurora_swarm.AgentEndpoint">AgentEndpoint</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="hostfile">
+<h3>Hostfile<a class="headerlink" href="#hostfile" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="aurora_swarm.hostfile.AgentEndpoint">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">aurora_swarm.hostfile.</span></span><span class="sig-name descname"><span class="pre">AgentEndpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tags</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/hostfile.html#AgentEndpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.hostfile.AgentEndpoint" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A single agent’s network address plus optional metadata tags.</p>
+<dl class="field-list simple">
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="aurora_swarm.hostfile.AgentEndpoint.host">
+<span class="sig-name descname"><span class="pre">host</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#aurora_swarm.hostfile.AgentEndpoint.host" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="aurora_swarm.hostfile.AgentEndpoint.port">
+<span class="sig-name descname"><span class="pre">port</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#aurora_swarm.hostfile.AgentEndpoint.port" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="aurora_swarm.hostfile.AgentEndpoint.tags">
+<span class="sig-name descname"><span class="pre">tags</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#aurora_swarm.hostfile.AgentEndpoint.tags" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="aurora_swarm.hostfile.AgentEndpoint.url">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">url</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#aurora_swarm.hostfile.AgentEndpoint.url" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="aurora_swarm.hostfile.parse_hostfile">
+<span class="sig-prename descclassname"><span class="pre">aurora_swarm.hostfile.</span></span><span class="sig-name descname"><span class="pre">parse_hostfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/hostfile.html#parse_hostfile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.hostfile.parse_hostfile" title="Link to this definition">¶</a></dt>
+<dd><p>Parse a hostfile and return a list of <a class="reference internal" href="#aurora_swarm.hostfile.AgentEndpoint" title="aurora_swarm.hostfile.AgentEndpoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">AgentEndpoint</span></code></a> objects.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></span>) – Path to the hostfile.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Parsed endpoints in file order.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="#aurora_swarm.hostfile.AgentEndpoint" title="aurora_swarm.hostfile.AgentEndpoint">AgentEndpoint</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="pool">
+<h3>Pool<a class="headerlink" href="#pool" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="aurora_swarm.pool.Response">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">aurora_swarm.pool.</span></span><span class="sig-name descname"><span class="pre">Response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">success</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/pool.html#Response"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.pool.Response" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Result of a single agent call.</p>
+<dl class="field-list simple">
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="aurora_swarm.pool.Response.success">
+<span class="sig-name descname"><span class="pre">success</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></span><a class="headerlink" href="#aurora_swarm.pool.Response.success" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="aurora_swarm.pool.Response.text">
+<span class="sig-name descname"><span class="pre">text</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#aurora_swarm.pool.Response.text" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="aurora_swarm.pool.Response.error">
+<span class="sig-name descname"><span class="pre">error</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#aurora_swarm.pool.Response.error" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="aurora_swarm.pool.Response.agent_index">
+<span class="sig-name descname"><span class="pre">agent_index</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1</span></span><a class="headerlink" href="#aurora_swarm.pool.Response.agent_index" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="aurora_swarm.pool.AgentPool">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">aurora_swarm.pool.</span></span><span class="sig-name descname"><span class="pre">AgentPool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">endpoints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concurrency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">512</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connector_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">120.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/pool.html#AgentPool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.pool.AgentPool" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Async pool of agent HTTP endpoints with concurrency control.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>endpoints</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code>[<a class="reference internal" href="#aurora_swarm.hostfile.AgentEndpoint" title="aurora_swarm.hostfile.AgentEndpoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">AgentEndpoint</span></code></a> | <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]]</span>) – Agent endpoints — either <code class="xref py py-class docutils literal notranslate"><span class="pre">AgentEndpoint</span></code> objects or plain
+<code class="docutils literal notranslate"><span class="pre">(host,</span> <span class="pre">port)</span></code> tuples (tags will be empty).</p></li>
+<li><p><strong>concurrency</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Maximum number of in-flight requests (asyncio semaphore size).</p></li>
+<li><p><strong>connector_limit</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Maximum number of TCP connections in the aiohttp pool.</p></li>
+<li><p><strong>timeout</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Per-request timeout in seconds.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="aurora_swarm.pool.AgentPool.close">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/pool.html#AgentPool.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.pool.AgentPool.close" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="aurora_swarm.pool.AgentPool.size">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">size</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#aurora_swarm.pool.AgentPool.size" title="Link to this definition">¶</a></dt>
+<dd><p>Number of agents in the pool.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="aurora_swarm.pool.AgentPool.endpoints">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">endpoints</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#aurora_swarm.hostfile.AgentEndpoint" title="aurora_swarm.hostfile.AgentEndpoint"><span class="pre">AgentEndpoint</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#aurora_swarm.pool.AgentPool.endpoints" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="aurora_swarm.pool.AgentPool.by_tag">
+<span class="sig-name descname"><span class="pre">by_tag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/pool.html#AgentPool.by_tag"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.pool.AgentPool.by_tag" title="Link to this definition">¶</a></dt>
+<dd><p>Return a sub-pool of agents whose tag <em>key</em> equals <em>value</em>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#aurora_swarm.pool.AgentPool" title="aurora_swarm.pool.AgentPool"><code class="xref py py-class docutils literal notranslate"><span class="pre">AgentPool</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="aurora_swarm.pool.AgentPool.sample">
+<span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/pool.html#AgentPool.sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.pool.AgentPool.sample" title="Link to this definition">¶</a></dt>
+<dd><p>Return a sub-pool of <em>n</em> randomly chosen agents.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#aurora_swarm.pool.AgentPool" title="aurora_swarm.pool.AgentPool"><code class="xref py py-class docutils literal notranslate"><span class="pre">AgentPool</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="aurora_swarm.pool.AgentPool.select">
+<span class="sig-name descname"><span class="pre">select</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/pool.html#AgentPool.select"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.pool.AgentPool.select" title="Link to this definition">¶</a></dt>
+<dd><p>Return a sub-pool with agents at the given indices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#aurora_swarm.pool.AgentPool" title="aurora_swarm.pool.AgentPool"><code class="xref py py-class docutils literal notranslate"><span class="pre">AgentPool</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="aurora_swarm.pool.AgentPool.slice">
+<span class="sig-name descname"><span class="pre">slice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/pool.html#AgentPool.slice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.pool.AgentPool.slice" title="Link to this definition">¶</a></dt>
+<dd><p>Return a sub-pool from index <em>start</em> to <em>stop</em>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#aurora_swarm.pool.AgentPool" title="aurora_swarm.pool.AgentPool"><code class="xref py py-class docutils literal notranslate"><span class="pre">AgentPool</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="aurora_swarm.pool.AgentPool.post">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">post</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agent_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/pool.html#AgentPool.post"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.pool.AgentPool.post" title="Link to this definition">¶</a></dt>
+<dd><p>Send <em>prompt</em> to the agent at <em>agent_index</em> and return its response.</p>
+<p>The call is throttled by the pool-wide semaphore so that at most
+<code class="docutils literal notranslate"><span class="pre">concurrency</span></code> requests are in flight at once.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#aurora_swarm.pool.Response" title="aurora_swarm.pool.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="aurora_swarm.pool.AgentPool.send_all">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">send_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/pool.html#AgentPool.send_all"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.pool.AgentPool.send_all" title="Link to this definition">¶</a></dt>
+<dd><p>Send <code class="docutils literal notranslate"><span class="pre">prompts[i]</span></code> to <code class="docutils literal notranslate"><span class="pre">agent[i</span> <span class="pre">%</span> <span class="pre">size]</span></code> concurrently.</p>
+<p>Returns responses in <em>input</em> order (i.e. <code class="docutils literal notranslate"><span class="pre">results[i]</span></code>
+corresponds to <code class="docutils literal notranslate"><span class="pre">prompts[i]</span></code>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<a class="reference internal" href="#aurora_swarm.pool.Response" title="aurora_swarm.pool.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="aurora_swarm.pool.AgentPool.broadcast_prompt">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">broadcast_prompt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/pool.html#AgentPool.broadcast_prompt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.pool.AgentPool.broadcast_prompt" title="Link to this definition">¶</a></dt>
+<dd><p>Send the same <em>prompt</em> to every agent in the pool.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<a class="reference internal" href="#aurora_swarm.pool.Response" title="aurora_swarm.pool.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-aurora_swarm.aggregators">
+<span id="aggregators"></span><h3>Aggregators<a class="headerlink" href="#module-aurora_swarm.aggregators" title="Link to this heading">¶</a></h3>
+<p>Aggregation strategies for agent responses.</p>
+<p>Every aggregator silently skips responses with <code class="docutils literal notranslate"><span class="pre">success=False</span></code> unless
+<code class="docutils literal notranslate"><span class="pre">include_failures=True</span></code> is passed.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="aurora_swarm.aggregators.majority_vote">
+<span class="sig-prename descclassname"><span class="pre">aurora_swarm.aggregators.</span></span><span class="sig-name descname"><span class="pre">majority_vote</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">responses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_failures</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/aggregators.html#majority_vote"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.aggregators.majority_vote" title="Link to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">(winner,</span> <span class="pre">confidence)</span></code> where <em>confidence</em> is the vote fraction.</p>
+<p>Responses are stripped and compared case-insensitively.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="aurora_swarm.aggregators.concat">
+<span class="sig-prename descclassname"><span class="pre">aurora_swarm.aggregators.</span></span><span class="sig-name descname"><span class="pre">concat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">responses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">separator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'\\n'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_failures</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/aggregators.html#concat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.aggregators.concat" title="Link to this definition">¶</a></dt>
+<dd><p>Join all response texts with <em>separator</em>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="aurora_swarm.aggregators.best_of">
+<span class="sig-prename descclassname"><span class="pre">aurora_swarm.aggregators.</span></span><span class="sig-name descname"><span class="pre">best_of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">responses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_failures</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/aggregators.html#best_of"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.aggregators.best_of" title="Link to this definition">¶</a></dt>
+<dd><p>Return the single highest-scoring response.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#aurora_swarm.pool.Response" title="aurora_swarm.pool.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="aurora_swarm.aggregators.top_k">
+<span class="sig-prename descclassname"><span class="pre">aurora_swarm.aggregators.</span></span><span class="sig-name descname"><span class="pre">top_k</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">responses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_failures</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/aggregators.html#top_k"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.aggregators.top_k" title="Link to this definition">¶</a></dt>
+<dd><p>Return the <em>k</em> highest-scoring responses (descending).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<a class="reference internal" href="#aurora_swarm.pool.Response" title="aurora_swarm.pool.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="aurora_swarm.aggregators.structured_merge">
+<span class="sig-prename descclassname"><span class="pre">aurora_swarm.aggregators.</span></span><span class="sig-name descname"><span class="pre">structured_merge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">responses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_failures</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/aggregators.html#structured_merge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.aggregators.structured_merge" title="Link to this definition">¶</a></dt>
+<dd><p>Parse each response as JSON and merge into a flat list.</p>
+<p>Returns <code class="docutils literal notranslate"><span class="pre">(merged_list,</span> <span class="pre">errors)</span></code> where <em>errors</em> captures parse
+failures with the agent index and error message.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]]]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="aurora_swarm.aggregators.statistics">
+<span class="sig-prename descclassname"><span class="pre">aurora_swarm.aggregators.</span></span><span class="sig-name descname"><span class="pre">statistics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">responses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extract_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_failures</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/aggregators.html#statistics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.aggregators.statistics" title="Link to this definition">¶</a></dt>
+<dd><p>Compute summary statistics over numeric response values.</p>
+<p>If <em>extract_fn</em> is <code class="docutils literal notranslate"><span class="pre">None</span></code>, response text is converted to float
+directly.</p>
+<p>Returns dict with keys <code class="docutils literal notranslate"><span class="pre">mean</span></code>, <code class="docutils literal notranslate"><span class="pre">std</span></code>, <code class="docutils literal notranslate"><span class="pre">median</span></code>, <code class="docutils literal notranslate"><span class="pre">min</span></code>, <code class="docutils literal notranslate"><span class="pre">max</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="aurora_swarm.aggregators.failure_report">
+<span class="sig-prename descclassname"><span class="pre">aurora_swarm.aggregators.</span></span><span class="sig-name descname"><span class="pre">failure_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">responses</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/aggregators.html#failure_report"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.aggregators.failure_report" title="Link to this definition">¶</a></dt>
+<dd><p>Return a diagnostic summary of successes and failures.</p>
+<p>Keys: <code class="docutils literal notranslate"><span class="pre">total</span></code>, <code class="docutils literal notranslate"><span class="pre">success_count</span></code>, <code class="docutils literal notranslate"><span class="pre">failure_count</span></code>, <code class="docutils literal notranslate"><span class="pre">failures</span></code>
+(list of <code class="docutils literal notranslate"><span class="pre">{agent_index,</span> <span class="pre">error}</span></code> dicts).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+<section id="communication-patterns">
+<h2>Communication patterns<a class="headerlink" href="#communication-patterns" title="Link to this heading">¶</a></h2>
+<section id="broadcast">
+<h3>Broadcast<a class="headerlink" href="#broadcast" title="Link to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="aurora_swarm.patterns.broadcast.broadcast">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">aurora_swarm.patterns.broadcast.</span></span><span class="sig-name descname"><span class="pre">broadcast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/patterns/broadcast.html#broadcast"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.patterns.broadcast.broadcast" title="Link to this definition">¶</a></dt>
+<dd><p>Send <em>prompt</em> to every agent in <em>pool</em>, return all responses in order.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<a class="reference internal" href="#aurora_swarm.pool.Response" title="aurora_swarm.pool.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="aurora_swarm.patterns.broadcast.broadcast_and_reduce">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">aurora_swarm.patterns.broadcast.</span></span><span class="sig-name descname"><span class="pre">broadcast_and_reduce</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduce_prompt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reducer_agent_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/patterns/broadcast.html#broadcast_and_reduce"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.patterns.broadcast.broadcast_and_reduce" title="Link to this definition">¶</a></dt>
+<dd><p>Two-phase broadcast: gather all responses, then reduce with one agent.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pool</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#aurora_swarm.pool.AgentPool" title="aurora_swarm.pool.AgentPool"><code class="xref py py-class docutils literal notranslate"><span class="pre">AgentPool</span></code></a></span>) – The agent pool to broadcast to.</p></li>
+<li><p><strong>prompt</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – The prompt sent to every agent.</p></li>
+<li><p><strong>reduce_prompt</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – A template string containing <code class="docutils literal notranslate"><span class="pre">{responses}</span></code> which will be
+replaced with the concatenated agent outputs.</p></li>
+<li><p><strong>reducer_agent_index</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Index of the agent (within <em>pool</em>) used for the reduction step.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#aurora_swarm.pool.Response" title="aurora_swarm.pool.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="scatter-gather">
+<h3>Scatter-Gather<a class="headerlink" href="#scatter-gather" title="Link to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="aurora_swarm.patterns.scatter_gather.scatter_gather">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">aurora_swarm.patterns.scatter_gather.</span></span><span class="sig-name descname"><span class="pre">scatter_gather</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/patterns/scatter_gather.html#scatter_gather"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.patterns.scatter_gather.scatter_gather" title="Link to this definition">¶</a></dt>
+<dd><p>Send <code class="docutils literal notranslate"><span class="pre">prompts[i]</span></code> to <code class="docutils literal notranslate"><span class="pre">agent[i</span> <span class="pre">%</span> <span class="pre">pool.size]</span></code>, gather in input order.</p>
+<p>If there are more prompts than agents the work wraps round-robin.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<a class="reference internal" href="#aurora_swarm.pool.Response" title="aurora_swarm.pool.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="aurora_swarm.patterns.scatter_gather.map_gather">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">aurora_swarm.patterns.scatter_gather.</span></span><span class="sig-name descname"><span class="pre">map_gather</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">items</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt_template</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/patterns/scatter_gather.html#map_gather"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.patterns.scatter_gather.map_gather" title="Link to this definition">¶</a></dt>
+<dd><p>Higher-level scatter: format <em>prompt_template</em> with each item.</p>
+<p>The template must contain an <code class="docutils literal notranslate"><span class="pre">{item}</span></code> placeholder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pool</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#aurora_swarm.pool.AgentPool" title="aurora_swarm.pool.AgentPool"><code class="xref py py-class docutils literal notranslate"><span class="pre">AgentPool</span></code></a></span>) – Agent pool.</p></li>
+<li><p><strong>items</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]</span>) – Work items — each is <code class="docutils literal notranslate"><span class="pre">str()</span></code>-ified and inserted into the
+template.</p></li>
+<li><p><strong>prompt_template</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Prompt with an <code class="docutils literal notranslate"><span class="pre">{item}</span></code> placeholder.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<a class="reference internal" href="#aurora_swarm.pool.Response" title="aurora_swarm.pool.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="tree-reduce">
+<h3>Tree-Reduce<a class="headerlink" href="#tree-reduce" title="Link to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="aurora_swarm.patterns.tree_reduce.tree_reduce">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">aurora_swarm.patterns.tree_reduce.</span></span><span class="sig-name descname"><span class="pre">tree_reduce</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduce_prompt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fanin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">items</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/patterns/tree_reduce.html#tree_reduce"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.patterns.tree_reduce.tree_reduce" title="Link to this definition">¶</a></dt>
+<dd><p>Run a hierarchical tree-reduce over <em>pool</em>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pool</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#aurora_swarm.pool.AgentPool" title="aurora_swarm.pool.AgentPool"><code class="xref py py-class docutils literal notranslate"><span class="pre">AgentPool</span></code></a></span>) – The agent pool (used for both leaf work and supervisors).</p></li>
+<li><p><strong>prompt</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Leaf-level task.  If <em>items</em> is provided the template should
+contain an <code class="docutils literal notranslate"><span class="pre">{item}</span></code> placeholder.</p></li>
+<li><p><strong>reduce_prompt</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Supervisor summarisation task.  Must contain <code class="docutils literal notranslate"><span class="pre">{responses}</span></code> and
+may contain <code class="docutils literal notranslate"><span class="pre">{level}</span></code>.</p></li>
+<li><p><strong>fanin</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Number of responses each supervisor handles per group.</p></li>
+<li><p><strong>items</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>] | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span>) – If given, scatter items across leaf agents (one per agent,
+round-robin).  Otherwise the same <em>prompt</em> is broadcast.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#aurora_swarm.pool.Response" title="aurora_swarm.pool.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="blackboard">
+<h3>Blackboard<a class="headerlink" href="#blackboard" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="aurora_swarm.patterns.blackboard.Blackboard">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">aurora_swarm.patterns.blackboard.</span></span><span class="sig-name descname"><span class="pre">Blackboard</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sections</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt_fn</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/patterns/blackboard.html#Blackboard"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.patterns.blackboard.Blackboard" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Shared-state workspace for multi-round agent collaboration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sections</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – Names of the board sections (e.g. <code class="docutils literal notranslate"><span class="pre">[&quot;hypotheses&quot;,</span> <span class="pre">&quot;critiques&quot;]</span></code>).</p></li>
+<li><p><strong>prompt_fn</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]], <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – <code class="docutils literal notranslate"><span class="pre">prompt_fn(role,</span> <span class="pre">board_state)</span> <span class="pre">-&gt;</span> <span class="pre">str</span></code> — generates the prompt
+that an agent with the given <em>role</em> should receive, given the
+current board contents.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="aurora_swarm.patterns.blackboard.Blackboard.board">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">board</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#aurora_swarm.patterns.blackboard.Blackboard.board" title="Link to this definition">¶</a></dt>
+<dd><p>Current board state (mutable reference).</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="aurora_swarm.patterns.blackboard.Blackboard.round">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">round</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#aurora_swarm.patterns.blackboard.Blackboard.round" title="Link to this definition">¶</a></dt>
+<dd><p>Number of completed rounds.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="aurora_swarm.patterns.blackboard.Blackboard.snapshot">
+<span class="sig-name descname"><span class="pre">snapshot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/patterns/blackboard.html#Blackboard.snapshot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.patterns.blackboard.Blackboard.snapshot" title="Link to this definition">¶</a></dt>
+<dd><p>Return a serialisable deep copy of the board state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="aurora_swarm.patterns.blackboard.Blackboard.run">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_rounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">convergence_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/patterns/blackboard.html#Blackboard.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.patterns.blackboard.Blackboard.run" title="Link to this definition">¶</a></dt>
+<dd><p>Execute rounds until <em>max_rounds</em> or convergence.</p>
+<p>Agent roles are determined by the <code class="docutils literal notranslate"><span class="pre">role</span></code> tag on each endpoint.
+Agents whose <code class="docutils literal notranslate"><span class="pre">role</span></code> matches a board section contribute to that
+section.  Agents with no <code class="docutils literal notranslate"><span class="pre">role</span></code> tag or a role not in the board
+sections are skipped.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pool</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#aurora_swarm.pool.AgentPool" title="aurora_swarm.pool.AgentPool"><code class="xref py py-class docutils literal notranslate"><span class="pre">AgentPool</span></code></a></span>) – Agent pool with role-tagged endpoints.</p></li>
+<li><p><strong>max_rounds</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Upper bound on the number of rounds.</p></li>
+<li><p><strong>convergence_fn</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]], <code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>] | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span>) – Optional <code class="docutils literal notranslate"><span class="pre">convergence_fn(board_state)</span> <span class="pre">-&gt;</span> <span class="pre">bool</span></code>.  If it
+returns <code class="docutils literal notranslate"><span class="pre">True</span></code> after a round the session stops early.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The final board.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>BoardState</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="pipeline">
+<h3>Pipeline<a class="headerlink" href="#pipeline" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="aurora_swarm.patterns.pipeline.Stage">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">aurora_swarm.patterns.pipeline.</span></span><span class="sig-name descname"><span class="pre">Stage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt_template</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_agents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_filter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/patterns/pipeline.html#Stage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.patterns.pipeline.Stage" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>One step of a pipeline.</p>
+<dl class="field-list simple">
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="aurora_swarm.patterns.pipeline.Stage.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#aurora_swarm.patterns.pipeline.Stage.name" title="Link to this definition">¶</a></dt>
+<dd><p>Human-readable label for the stage.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="aurora_swarm.patterns.pipeline.Stage.prompt_template">
+<span class="sig-name descname"><span class="pre">prompt_template</span></span><a class="headerlink" href="#aurora_swarm.patterns.pipeline.Stage.prompt_template" title="Link to this definition">¶</a></dt>
+<dd><p>Must contain <code class="docutils literal notranslate"><span class="pre">{input}</span></code> which is replaced with the previous
+stage’s output (or the initial input for the first stage).</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="aurora_swarm.patterns.pipeline.Stage.n_agents">
+<span class="sig-name descname"><span class="pre">n_agents</span></span><a class="headerlink" href="#aurora_swarm.patterns.pipeline.Stage.n_agents" title="Link to this definition">¶</a></dt>
+<dd><p>How many agents this stage should use.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="aurora_swarm.patterns.pipeline.Stage.output_transform">
+<span class="sig-name descname"><span class="pre">output_transform</span></span><a class="headerlink" href="#aurora_swarm.patterns.pipeline.Stage.output_transform" title="Link to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">f(responses)</span> <span class="pre">-&gt;</span> <span class="pre">Any</span></code> — reshapes the list of responses into
+a single value to feed the next stage.  If <code class="docutils literal notranslate"><span class="pre">None</span></code>, responses
+are concatenated with newlines.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="aurora_swarm.patterns.pipeline.Stage.output_filter">
+<span class="sig-name descname"><span class="pre">output_filter</span></span><a class="headerlink" href="#aurora_swarm.patterns.pipeline.Stage.output_filter" title="Link to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">f(response)</span> <span class="pre">-&gt;</span> <span class="pre">bool</span></code> — drops responses that return <code class="docutils literal notranslate"><span class="pre">False</span></code>
+before the transform step.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="aurora_swarm.patterns.pipeline.run_pipeline">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">aurora_swarm.patterns.pipeline.</span></span><span class="sig-name descname"><span class="pre">run_pipeline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stages</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reuse_agents</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/patterns/pipeline.html#run_pipeline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.patterns.pipeline.run_pipeline" title="Link to this definition">¶</a></dt>
+<dd><p>Execute stages sequentially; the output of each flows to the next.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pool</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#aurora_swarm.pool.AgentPool" title="aurora_swarm.pool.AgentPool"><code class="xref py py-class docutils literal notranslate"><span class="pre">AgentPool</span></code></a></span>) – The full agent pool.</p></li>
+<li><p><strong>stages</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<a class="reference internal" href="#aurora_swarm.patterns.pipeline.Stage" title="aurora_swarm.patterns.pipeline.Stage"><code class="xref py py-class docutils literal notranslate"><span class="pre">Stage</span></code></a>]</span>) – Ordered list of pipeline stages.</p></li>
+<li><p><strong>initial_input</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></span>) – Value substituted into <code class="docutils literal notranslate"><span class="pre">{input}</span></code> for the first stage.</p></li>
+<li><p><strong>reuse_agents</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code> all stages draw agents from the same pool (up to
+<code class="docutils literal notranslate"><span class="pre">n_agents</span></code>).  If <code class="docutils literal notranslate"><span class="pre">False</span></code> the pool is partitioned so each
+stage receives a dedicated, non-overlapping subset.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The transformed output of the final stage.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Aurora Swarm</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#core">Core</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#communication-patterns">Communication patterns</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Aurora Swarm</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;Aurora Swarm contributors.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/api.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
