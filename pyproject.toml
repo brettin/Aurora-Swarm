@@ -11,6 +11,9 @@ dependencies = [
     "aiohttp>=3.9",
 ]
 
+[project.scripts]
+aurora-swarm-proxy = "aurora_swarm.cli:main"
+
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
