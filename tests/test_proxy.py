@@ -10,7 +10,6 @@ from aiohttp.test_utils import TestClient, TestServer
 
 from aurora_swarm.hostfile import AgentEndpoint
 
-
 # ---------------------------------------------------------------------------
 # Helper: build a proxy app wired to the given endpoints
 # ---------------------------------------------------------------------------
@@ -27,6 +26,7 @@ def _create_proxy_app(
     avoids blocking on ``web.run_app``.
     """
     from aurora_swarm.proxy import (
+        _handle_hosts,
         _health_handler,
         _on_cleanup,
         _on_startup,
@@ -45,6 +45,7 @@ def _create_proxy_app(
     app.on_cleanup.append(_on_cleanup)
 
     app.router.add_get("/health", _health_handler)
+    app.router.add_get("/hosts", _handle_hosts)
     app.router.add_get("/status", _status_handler)
     app.router.add_route("*", "/agent/{index}/{path:.*}", _proxy_handler)
 
@@ -216,6 +217,39 @@ async def test_proxy_negative_index(proxy_client):
     assert resp.status == 400
     data = await resp.json()
     assert "error" in data
+
+
+@pytest.mark.asyncio
+async def test_hosts_endpoint():
+    """GET /hosts returns 200 with all hosts and their tags."""
+    endpoints = [
+        AgentEndpoint(host="host1", port=8000, tags={"role": "worker"}),
+        AgentEndpoint(host="host2", port=9000, tags={"role": "critic", "node": "n1"}),
+        AgentEndpoint(host="host3", port=8000),
+    ]
+    app = _create_proxy_app(endpoints)
+    async with TestClient(TestServer(app)) as client:
+        resp = await client.get("/hosts")
+        assert resp.status == 200
+        data = await resp.json()
+        assert "hosts" in data
+        assert len(data["hosts"]) == 3
+
+        assert data["hosts"][0] == {
+            "host": "host1",
+            "port": 8000,
+            "tags": {"role": "worker"},
+        }
+        assert data["hosts"][1] == {
+            "host": "host2",
+            "port": 9000,
+            "tags": {"role": "critic", "node": "n1"},
+        }
+        assert data["hosts"][2] == {
+            "host": "host3",
+            "port": 8000,
+            "tags": {},
+        }
 
 
 @pytest.mark.asyncio

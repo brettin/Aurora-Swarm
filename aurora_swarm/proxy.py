@@ -63,6 +63,20 @@ async def _health_handler(request: web.Request) -> web.Response:
     return web.json_response({"status": "ok"})
 
 
+async def _handle_hosts(request: web.Request) -> web.Response:
+    """Return all agent hosts as JSON."""
+    endpoints: list[AgentEndpoint] = request.app["endpoints"]
+    hosts = [
+        {
+            "host": ep.host,
+            "port": ep.port,
+            "tags": dict(ep.tags),
+        }
+        for ep in endpoints
+    ]
+    return web.json_response({"hosts": hosts})
+
+
 async def _status_handler(request: web.Request) -> web.Response:
     """Return proxy status including agent list and uptime."""
     endpoints: list[AgentEndpoint] = request.app["endpoints"]
@@ -293,6 +307,7 @@ def run_proxy(
 
     # Register routes.
     app.router.add_get("/health", _health_handler)
+    app.router.add_get("/hosts", _handle_hosts)
     app.router.add_get("/status", _status_handler)
     app.router.add_route("*", "/agent/{index}/{path:.*}", _proxy_handler)
 
