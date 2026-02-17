@@ -38,7 +38,11 @@ Pool
 VLLM pool
 ~~~~~~~~~
 
-:class:`VLLMPool` is an :class:`~aurora_swarm.pool.AgentPool` subclass for vLLM OpenAI-compatible endpoints. It supports config-based and dynamic context length (see :doc:`context_length`).
+:class:`VLLMPool` is an :class:`~aurora_swarm.pool.AgentPool` subclass for vLLM OpenAI-compatible endpoints. It supports:
+
+- Config-based and dynamic context length (see :doc:`context_length`)
+- Batch prompting for high-throughput inference (see :doc:`batch_prompting`)
+- Both ``/v1/completions`` (batch mode) and ``/v1/chat/completions`` (non-batch) endpoints
 
 .. autoclass:: aurora_swarm.vllm_pool.VLLMPool
    :members:

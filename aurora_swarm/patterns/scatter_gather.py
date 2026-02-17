@@ -18,8 +18,9 @@ async def scatter_gather(
     """Send ``prompts[i]`` to ``agent[i % pool.size]``, gather in input order.
 
     If there are more prompts than agents the work wraps round-robin.
+    Uses batch API when available (VLLMPool) for improved throughput.
     """
-    return await pool.send_all(prompts)
+    return await pool.send_all_batched(prompts)
 
 
 async def map_gather(

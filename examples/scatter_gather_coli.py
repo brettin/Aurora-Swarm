@@ -84,7 +84,7 @@ def print_with_timestamp(message: str) -> None:
     print(f"[{timestamp}] {message}", file=sys.stderr)
 
 
-def discover_chunk_files(input_dir: Path, num_files: int) -> list[Path]:
+def discover_chunk_files(input_dir: Path, num_files: int, skip_files: int = 0) -> list[Path]:
     """Discover chunk files in input directory.
     
     Parameters
@@ -93,6 +93,8 @@ def discover_chunk_files(input_dir: Path, num_files: int) -> list[Path]:
         Directory containing chunk_*.txt files.
     num_files:
         Maximum number of files to return.
+    skip_files:
+        Number of files to skip at the start (for resuming).
     
     Returns
     -------
@@ -103,7 +105,10 @@ def discover_chunk_files(input_dir: Path, num_files: int) -> list[Path]:
     if not chunk_files:
         raise FileNotFoundError(f"No chunk_*.txt files found in {input_dir}")
     
-    return chunk_files[:num_files]
+    # Skip files and take the requested number
+    start_idx = skip_files
+    end_idx = skip_files + num_files
+    return chunk_files[start_idx:end_idx]
 
 
 def parse_gene_line(line: str, line_num: int) -> tuple[str, str, str, str] | None:
@@ -200,8 +205,8 @@ def read_and_prepare_data(chunk_files: list[Path]) -> tuple[list[str], list[str]
     
     print_with_timestamp(f"Reading {len(chunk_files)} chunk files...")
     
-    for file_path in chunk_files:
-        print_with_timestamp(f"  Processing {file_path.name}...")
+    for file_idx, file_path in enumerate(chunk_files, 1):
+        print_with_timestamp(f"  [{file_idx}/{len(chunk_files)}] Processing {file_path.name}...")
         
         with open(file_path, 'r', encoding='utf-8') as f:
             for line_num, line in enumerate(f, 1):
@@ -356,6 +361,12 @@ async def main() -> int:
         help='Number of chunk files to process (default: 10)',
     )
     parser.add_argument(
+        '--skip-files',
+        type=int,
+        default=0,
+        help='Number of chunk files to skip at the start (for resuming, default: 0)',
+    )
+    parser.add_argument(
         '--output',
         type=Path,
         help='Output file for results (default: stdout)',
@@ -427,8 +438,16 @@ async def main() -> int:
     
     # Discover chunk files
     try:
-        chunk_files = discover_chunk_files(args.input_dir, args.num_files)
-        print_with_timestamp(f"Found {len(chunk_files)} chunk files (using first {len(chunk_files)})")
+        chunk_files = discover_chunk_files(args.input_dir, args.num_files, args.skip_files)
+        if args.skip_files > 0:
+            print_with_timestamp(f"Skipping first {args.skip_files} files")
+        print_with_timestamp(f"Found {len(chunk_files)} chunk files to process")
+        print_with_timestamp("=" * 80)
+        print_with_timestamp("Files to process:")
+        for i, f in enumerate(chunk_files, 1):
+            file_num = args.skip_files + i
+            print_with_timestamp(f"  {file_num:3d}. {f.name}")
+        print_with_timestamp("=" * 80)
     except FileNotFoundError as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1

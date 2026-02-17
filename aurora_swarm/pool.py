@@ -186,6 +186,26 @@ class AgentPool:
         ]
         return list(await asyncio.gather(*tasks))
 
+    async def send_all_batched(self, prompts: list[str], max_tokens: int | None = None) -> list[Response]:
+        """Send prompts with batching if supported, otherwise use send_all.
+
+        Default implementation for base AgentPool — just delegates to send_all.
+        VLLMPool overrides this to use batch API for efficiency.
+
+        Parameters
+        ----------
+        prompts:
+            List of prompts to send.
+        max_tokens:
+            Optional max tokens override (ignored in base implementation).
+
+        Returns
+        -------
+        list[Response]
+            Responses in the same order as input prompts.
+        """
+        return await self.send_all(prompts)
+
     async def broadcast_prompt(self, prompt: str) -> list[Response]:
         """Send the same *prompt* to every agent in the pool."""
         tasks = [self.post(i, prompt) for i in range(self.size)]

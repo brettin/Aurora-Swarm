@@ -49,7 +49,7 @@ Install in editable (development) mode so that local changes are picked up immed
 pip install -e .
 ```
 
-This pulls in the core runtime dependency (`aiohttp>=3.9`).
+This pulls in the core runtime dependencies (`aiohttp>=3.9`, `openai>=1.0`).
 
 ### 4. Install development / test dependencies
 
@@ -97,6 +97,7 @@ Aurora-Swarm/
 │   ├── __init__.py            # Public API re-exports
 │   ├── hostfile.py            # Hostfile parser (AgentEndpoint)
 │   ├── pool.py                # AgentPool — async connection pool
+│   ├── vllm_pool.py           # VLLMPool — OpenAI-compatible batch prompting
 │   ├── aggregators.py         # Response aggregation strategies
 │   └── patterns/
 │       ├── __init__.py
@@ -105,6 +106,9 @@ Aurora-Swarm/
 │       ├── tree_reduce.py     # Pattern 3 — Tree-Reduce
 │       ├── blackboard.py      # Pattern 4 — Blackboard (shared-state)
 │       └── pipeline.py        # Pattern 5 — Pipeline (multi-stage DAG)
+├── examples/
+│   ├── scatter_gather_coli.py # TOM.COLI gene analysis example
+│   └── context_length_demo.py # Context length configuration demo
 ├── tests/
 │   ├── conftest.py            # Shared fixtures (mock servers, pools)
 │   ├── test_broadcast.py
@@ -112,7 +116,10 @@ Aurora-Swarm/
 │   ├── test_tree_reduce.py
 │   ├── test_blackboard.py
 │   ├── test_pipeline.py
-│   └── integration/          # Integration tests
+│   ├── test_vllm_pool.py      # VLLMPool batch prompting tests
+│   ├── test_vllm_pool_config.py
+│   └── integration/           # Integration tests (require running vLLM)
+│       ├── conftest.py        # Hostfile resolution, vLLM fixtures
 │       ├── test_broadcast.py
 │       ├── test_scatter_gather.py
 │       ├── test_tree_reduce.py
@@ -120,11 +127,19 @@ Aurora-Swarm/
 │       └── test_pipeline.py
 ├── docs/
 │   ├── conf.py                # Sphinx configuration
-│   ├── index.rst               # Landing page
-│   ├── api.rst                 # API reference (autodoc)
-│   ├── Makefile                # make html
-│   └── _build/                 # make html output
-└── pyproject.toml
+│   ├── index.rst              # Landing page
+│   ├── batch_prompting.rst    # Batch prompting guide
+│   ├── context_length.rst     # Context length configuration
+│   ├── api.rst                # API reference (autodoc)
+│   ├── Makefile               # make html
+│   └── _build/                # make html output
+├── test_batch_integration.py  # Standalone batch vs non-batch comparison
+├── BATCH_PROMPTING.md         # Batch prompting implementation guide
+├── BATCH_PROMPTING_QUICKREF.md
+├── IMPLEMENTATION_SUMMARY.md  # Batch prompting implementation summary
+├── CONTEXT_LENGTH.md          # Context length documentation
+├── pyproject.toml
+└── README.md                  # This file
 ```
 
 ---
@@ -170,6 +185,29 @@ async with AgentPool(endpoints, concurrency=512) as pool:
 | **Tree-Reduce** | Hierarchical map-reduce — leaf agents produce answers, supervisors recursively summarize groups. |
 | **Blackboard** | Agents collaborate through a shared mutable workspace in iterative rounds until convergence. |
 | **Pipeline** | Multi-stage DAG where the output of one stage feeds the next. |
+
+### Batch Prompting for High Throughput
+
+**VLLMPool** supports batch prompting via the OpenAI completions API, dramatically reducing HTTP request overhead:
+
+- **Without batching:** 10,000 prompts = 10,000 HTTP requests (100 per agent with 100 agents)
+- **With batching:** 10,000 prompts = 100 HTTP requests (1 per agent, each with 100 prompts)
+
+This 100× reduction in request count significantly improves throughput for scatter-gather and tree-reduce patterns. Batch mode is enabled by default in VLLMPool and automatically used by `scatter_gather()` and `tree_reduce()`.
+
+**Usage:**
+
+```python
+from aurora_swarm import VLLMPool, parse_hostfile
+from aurora_swarm.patterns.scatter_gather import scatter_gather
+
+endpoints = parse_hostfile("agents.hostfile")
+async with VLLMPool(endpoints, model="meta-llama/Llama-3.1-70B-Instruct", use_batch=True) as pool:
+    prompts = [f"Analyze gene {i}" for i in range(10000)]
+    responses = await scatter_gather(pool, prompts)  # Uses batch API automatically
+```
+
+**Note:** Batch mode uses the `/v1/completions` endpoint. For instruction-tuned models that expect chat formatting, prompts are sent as-is. If your model requires specific chat templates, you may need to format prompts accordingly before sending.
 
 ### Aggregators
 
@@ -263,7 +301,16 @@ response = await pool.post(agent_index=0, prompt="...", max_tokens=512)
 | Item | Value |
 |------|-------|
 | Python | >= 3.11 |
-| Core dependency | `aiohttp >= 3.9` |
+| Core dependencies | `aiohttp >= 3.9`, `openai >= 1.0` |
 | Dev dependencies | `pytest >= 8.0`, `pytest-asyncio >= 0.23` |
 | Docs (optional) | `pip install -e ".[docs]"` — Sphinx API reference |
 | Build backend | `setuptools >= 68.0` |
+
+---
+
+## Additional Documentation
+
+- **[BATCH_PROMPTING.md](BATCH_PROMPTING.md)** - Detailed implementation guide for batch prompting feature
+- **[API Reference](https://brettin.github.io/Aurora-Swarm/)** - Full Sphinx documentation with API details
+- **[Context Length Management](docs/context_length.rst)** - Configuration guide for token limits
+- **Integration Tests** - See `tests/integration/` for real-world usage examples

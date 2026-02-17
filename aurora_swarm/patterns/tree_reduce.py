@@ -41,7 +41,7 @@ async def tree_reduce(
     # -- leaf phase ----------------------------------------------------------
     if items is not None:
         leaf_prompts = [prompt.replace("{item}", str(it)) for it in items]
-        leaf_responses = await pool.send_all(leaf_prompts)
+        leaf_responses = await pool.send_all_batched(leaf_prompts)
     else:
         leaf_responses = await pool.broadcast_prompt(prompt)
 
@@ -64,7 +64,7 @@ async def tree_reduce(
             supervisor_prompts.append(filled)
 
         # scatter supervisor work across available agents
-        sup_responses = await pool.send_all(supervisor_prompts)
+        sup_responses = await pool.send_all_batched(supervisor_prompts)
         current = [r.text for r in sup_responses if r.success]
         level += 1
 

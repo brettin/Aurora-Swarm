@@ -8,8 +8,11 @@ the base :class:`AgentPool`.
 
 from __future__ import annotations
 
+import asyncio
 import os
 import aiohttp
+
+from openai import AsyncOpenAI
 
 from aurora_swarm.hostfile import AgentEndpoint
 from aurora_swarm.pool import AgentPool, Response
@@ -39,6 +42,10 @@ class VLLMPool(AgentPool):
     buffer:
         Safety margin (in tokens) for dynamic sizing to account for
         reasoning overhead. Defaults to 512.
+    use_batch:
+        If True, use batch prompting via the completions API for
+        send_all_batched. If False, fall back to individual requests.
+        Defaults to True.
     concurrency:
         Maximum number of in-flight requests.
     connector_limit:
@@ -55,6 +62,7 @@ class VLLMPool(AgentPool):
         max_tokens_aggregation: int | None = None,
         model_max_context: int | None = None,
         buffer: int = 512,
+        use_batch: bool = True,
         concurrency: int = 512,
         connector_limit: int = 1024,
         timeout: float = 300.0,
@@ -66,6 +74,7 @@ class VLLMPool(AgentPool):
             timeout=timeout,
         )
         self._model = model
+        self._use_batch = use_batch
         
         # Load from environment with fallbacks
         self._max_tokens = (
@@ -82,6 +91,15 @@ class VLLMPool(AgentPool):
         )
         self._buffer = buffer
         self._model_max_context_cached: int | None = None
+        
+        # Create OpenAI clients for each endpoint (for batch requests)
+        self._openai_clients: dict[int, AsyncOpenAI] = {}
+        for i, ep in enumerate(self._endpoints):
+            self._openai_clients[i] = AsyncOpenAI(
+                base_url=f"{ep.url}/v1",
+                api_key="EMPTY",  # vLLM convention
+                timeout=timeout,
+            )
 
     # -- model metadata -------------------------------------------------------
 
@@ -206,6 +224,142 @@ class VLLMPool(AgentPool):
                     agent_index=agent_index,
                 )
 
+    async def post_batch(
+        self,
+        agent_index: int,
+        prompts: list[str],
+        max_tokens: int | None = None,
+    ) -> list[Response]:
+        """Send multiple prompts to one agent via the completions API.
+
+        Uses the OpenAI completions endpoint which supports batch prompts
+        (a list of strings). This reduces N HTTP requests to 1.
+
+        Parameters
+        ----------
+        agent_index:
+            Index of the agent to send prompts to.
+        prompts:
+            List of prompts to send in one batch.
+        max_tokens:
+            Optional override for max tokens. If None, uses dynamic sizing
+            based on average prompt length.
+
+        Returns
+        -------
+        list[Response]
+            One Response per prompt, in the same order as the input.
+        """
+        if not prompts:
+            return []
+
+        ep = self._endpoints[agent_index]
+        client = self._openai_clients[agent_index]
+
+        # Compute max_tokens dynamically if not explicitly provided
+        if max_tokens is None:
+            # Get model's max context length
+            model_max = await self._get_model_max_context()
+
+            # Estimate tokens based on average prompt length
+            avg_prompt_len = sum(len(p) for p in prompts) // len(prompts)
+            prompt_est = avg_prompt_len // 4
+
+            # Dynamic sizing: never exceed model capacity
+            tokens = min(
+                self._max_tokens,
+                max(128, model_max - prompt_est - self._buffer)
+            )
+        else:
+            tokens = max_tokens
+
+        async with self._semaphore:
+            try:
+                # Call completions API with batch prompts
+                response = await client.completions.create(
+                    model=self._model,
+                    prompt=prompts,
+                    max_tokens=tokens,
+                )
+
+                # Map choices to Response objects
+                results: list[Response] = []
+                for i, choice in enumerate(response.choices):
+                    results.append(
+                        Response(
+                            success=True,
+                            text=choice.text,
+                            agent_index=agent_index,
+                        )
+                    )
+                return results
+
+            except Exception as exc:
+                # On error, return failed Response for each prompt
+                return [
+                    Response(
+                        success=False,
+                        text="",
+                        error=f"{type(exc).__name__}: {str(exc)}",
+                        agent_index=agent_index,
+                    )
+                    for _ in prompts
+                ]
+
+    async def send_all_batched(
+        self,
+        prompts: list[str],
+        max_tokens: int | None = None,
+    ) -> list[Response]:
+        """Send prompts using batch API, grouping by target agent.
+
+        Groups prompts by their target agent (round-robin based on index),
+        then sends one batched request per agent. Reconstructs results in
+        input order.
+
+        Parameters
+        ----------
+        prompts:
+            List of prompts to send.
+        max_tokens:
+            Optional max tokens override.
+
+        Returns
+        -------
+        list[Response]
+            Responses in the same order as input prompts.
+        """
+        if not self._use_batch or not prompts:
+            # Fall back to non-batched send_all
+            return await self.send_all(prompts)
+
+        # Group prompts by target agent
+        groups: dict[int, list[tuple[int, str]]] = {}
+        for i, prompt in enumerate(prompts):
+            agent_idx = i % self.size
+            if agent_idx not in groups:
+                groups[agent_idx] = []
+            groups[agent_idx].append((i, prompt))
+
+        # Send batched requests concurrently
+        async def send_group(agent_idx: int, items: list[tuple[int, str]]) -> list[tuple[int, Response]]:
+            """Send batch to one agent, return (original_index, response) pairs."""
+            group_prompts = [prompt for _, prompt in items]
+            responses = await self.post_batch(agent_idx, group_prompts, max_tokens)
+            return [(items[j][0], responses[j]) for j in range(len(items))]
+
+        tasks = [send_group(agent_idx, items) for agent_idx, items in groups.items()]
+        all_results = await asyncio.gather(*tasks)
+
+        # Flatten and sort by original index
+        indexed_responses: list[tuple[int, Response]] = []
+        for result_group in all_results:
+            indexed_responses.extend(result_group)
+        indexed_responses.sort(key=lambda x: x[0])
+
+        # Extract responses in order
+        return [resp for _, resp in indexed_responses]
+
     # -- sub-pool override ---------------------------------------------------
 
     def _sub_pool(self, endpoints: list[AgentEndpoint]) -> "VLLMPool":
@@ -218,9 +372,11 @@ class VLLMPool(AgentPool):
         child._semaphore = self._semaphore
         child._session = self._session
         child._model = self._model
+        child._use_batch = self._use_batch
         child._max_tokens = self._max_tokens
         child._max_tokens_aggregation = self._max_tokens_aggregation
         child._model_max_context = self._model_max_context
         child._buffer = self._buffer
         child._model_max_context_cached = self._model_max_context_cached
+        child._openai_clients = self._openai_clients  # Share clients
         return child
