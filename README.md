@@ -109,6 +109,8 @@ Aurora-Swarm/
 ├── examples/
 │   ├── scatter_gather_coli.py # TOM.COLI gene analysis example
 │   └── context_length_demo.py # Context length configuration demo
+├── scripts/
+│   └── wait_for_vllm_servers.py # Wait for hostfile + healthy vLLM; write filtered hostfile
 ├── tests/
 │   ├── conftest.py            # Shared fixtures (mock servers, pools)
 │   ├── test_broadcast.py
@@ -163,6 +165,17 @@ from aurora_swarm import parse_hostfile
 
 endpoints = parse_hostfile("agents.hostfile")
 ```
+
+### Waiting for vLLM servers (PBS)
+
+When vLLM servers are started by a PBS job, the hostfile is created only after the job starts (which can be hours or days after submit). Use the helper script to wait for the hostfile to appear and for servers to become healthy, then write a filtered hostfile that omits any nodes where vLLM failed to start:
+
+```bash
+python scripts/wait_for_vllm_servers.py --hostfile /path/to/job_hostfile.txt \
+    --health-timeout 1800 --output /path/to/ready_hostfile.txt
+```
+
+The health-phase timeout starts only after the first healthy node appears. Nodes that do not become healthy in time are logged and omitted from the output hostfile. Use the output path with `AURORA_SWARM_HOSTFILE` or `--hostfile` when running `scatter_gather_coli.py` or other clients.
 
 ### AgentPool
 
