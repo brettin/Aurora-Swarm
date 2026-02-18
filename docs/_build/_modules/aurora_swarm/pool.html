@@ -245,6 +245,29 @@
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">tasks</span><span class="p">))</span></div>
 
 
+<div class="viewcode-block" id="AgentPool.send_all_batched">
+<a class="viewcode-back" href="../../api.html#aurora_swarm.AgentPool.send_all_batched">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">send_all_batched</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">max_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Response</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Send prompts with batching if supported, otherwise use send_all.</span>
+
+<span class="sd">        Default implementation for base AgentPool — just delegates to send_all.</span>
+<span class="sd">        VLLMPool overrides this to use batch API for efficiency.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        prompts:</span>
+<span class="sd">            List of prompts to send.</span>
+<span class="sd">        max_tokens:</span>
+<span class="sd">            Optional max tokens override (ignored in base implementation).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list[Response]</span>
+<span class="sd">            Responses in the same order as input prompts.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_all</span><span class="p">(</span><span class="n">prompts</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="AgentPool.broadcast_prompt">
 <a class="viewcode-back" href="../../api.html#aurora_swarm.AgentPool.broadcast_prompt">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">broadcast_prompt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Response</span><span class="p">]:</span>
@@ -282,6 +305,7 @@
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
 <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../batch_prompting.html">Batch Prompting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../context_length.html">Context length configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
 </ul>

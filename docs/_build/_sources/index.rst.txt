@@ -26,6 +26,18 @@ Quick start
 
    asyncio.run(main())
 
+Key Features
+------------
+
+**Batch Prompting for High Throughput**
+
+VLLMPool supports batch prompting to dramatically reduce HTTP overhead:
+
+- 10,000 prompts with 100 agents = 100 requests instead of 10,000
+- 100× reduction in request count improves throughput significantly
+- Enabled by default, transparent to existing code
+- See :doc:`batch_prompting` for details
+
 Communication patterns
 ----------------------
 
@@ -53,6 +65,7 @@ Documentation
    :maxdepth: 2
    :caption: Contents
 
+   batch_prompting
    context_length
    api
 

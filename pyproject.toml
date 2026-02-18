@@ -9,6 +9,7 @@ description = "Communication patterns for orchestrating large-scale LLM agent sw
 requires-python = ">=3.11"
 dependencies = [
     "aiohttp>=3.9",
+    "openai>=1.0",
 ]
 
 [project.scripts]

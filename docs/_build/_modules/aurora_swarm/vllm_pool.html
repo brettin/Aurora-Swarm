@@ -41,8 +41,11 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">aiohttp</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">openai</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncOpenAI</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora_swarm.hostfile</span><span class="w"> </span><span class="kn">import</span> <span class="n">AgentEndpoint</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">aurora_swarm.pool</span><span class="w"> </span><span class="kn">import</span> <span class="n">AgentPool</span><span class="p">,</span> <span class="n">Response</span>
@@ -74,6 +77,10 @@
 <span class="sd">    buffer:</span>
 <span class="sd">        Safety margin (in tokens) for dynamic sizing to account for</span>
 <span class="sd">        reasoning overhead. Defaults to 512.</span>
+<span class="sd">    use_batch:</span>
+<span class="sd">        If True, use batch prompting via the completions API for</span>
+<span class="sd">        send_all_batched. If False, fall back to individual requests.</span>
+<span class="sd">        Defaults to True.</span>
 <span class="sd">    concurrency:</span>
 <span class="sd">        Maximum number of in-flight requests.</span>
 <span class="sd">    connector_limit:</span>
@@ -90,6 +97,7 @@
         <span class="n">max_tokens_aggregation</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">model_max_context</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">buffer</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">512</span><span class="p">,</span>
+        <span class="n">use_batch</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">concurrency</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">512</span><span class="p">,</span>
         <span class="n">connector_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">,</span>
         <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">300.0</span><span class="p">,</span>
@@ -101,6 +109,7 @@
             <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_use_batch</span> <span class="o">=</span> <span class="n">use_batch</span>
         
         <span class="c1"># Load from environment with fallbacks</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_max_tokens</span> <span class="o">=</span> <span class="p">(</span>
@@ -117,6 +126,15 @@
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_buffer</span> <span class="o">=</span> <span class="n">buffer</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_model_max_context_cached</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        
+        <span class="c1"># Create OpenAI clients for each endpoint (for batch requests)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_openai_clients</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">AsyncOpenAI</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ep</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_endpoints</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_openai_clients</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">AsyncOpenAI</span><span class="p">(</span>
+                <span class="n">base_url</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ep</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">/v1&quot;</span><span class="p">,</span>
+                <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;EMPTY&quot;</span><span class="p">,</span>  <span class="c1"># vLLM convention</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+            <span class="p">)</span>
 
     <span class="c1"># -- model metadata -------------------------------------------------------</span>
 
@@ -208,6 +226,26 @@
                     <span class="n">timeout</span><span class="o">=</span><span class="n">aiohttp</span><span class="o">.</span><span class="n">ClientTimeout</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span><span class="p">),</span>
                 <span class="p">)</span> <span class="k">as</span> <span class="n">resp</span><span class="p">:</span>
                     <span class="n">data</span> <span class="o">=</span> <span class="k">await</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+                    
+                    <span class="c1"># Check for error response</span>
+                    <span class="k">if</span> <span class="n">resp</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+                        <span class="n">error_msg</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;error&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;message&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;HTTP </span><span class="si">{</span><span class="n">resp</span><span class="o">.</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span>
+                            <span class="n">success</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                            <span class="n">text</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                            <span class="n">error</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;API error: </span><span class="si">{</span><span class="n">error_msg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                            <span class="n">agent_index</span><span class="o">=</span><span class="n">agent_index</span><span class="p">,</span>
+                        <span class="p">)</span>
+                    
+                    <span class="c1"># Check for expected response structure</span>
+                    <span class="k">if</span> <span class="s2">&quot;choices&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;choices&quot;</span><span class="p">]:</span>
+                        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span>
+                            <span class="n">success</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                            <span class="n">text</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                            <span class="n">error</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Invalid response structure: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                            <span class="n">agent_index</span><span class="o">=</span><span class="n">agent_index</span><span class="p">,</span>
+                        <span class="p">)</span>
+                    
                     <span class="n">message</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;choices&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;message&quot;</span><span class="p">]</span>
                     <span class="n">text</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;content&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">message</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;reasoning_content&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
                     <span class="k">return</span> <span class="n">Response</span><span class="p">(</span>
@@ -219,9 +257,151 @@
                 <span class="k">return</span> <span class="n">Response</span><span class="p">(</span>
                     <span class="n">success</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                     <span class="n">text</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-                    <span class="n">error</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">),</span>
+                    <span class="n">error</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
                     <span class="n">agent_index</span><span class="o">=</span><span class="n">agent_index</span><span class="p">,</span>
                 <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="VLLMPool.post_batch">
+<a class="viewcode-back" href="../../api.html#aurora_swarm.VLLMPool.post_batch">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">post_batch</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">agent_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">prompts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">max_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Response</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Send multiple prompts to one agent via the completions API.</span>
+
+<span class="sd">        Uses the OpenAI completions endpoint which supports batch prompts</span>
+<span class="sd">        (a list of strings). This reduces N HTTP requests to 1.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        agent_index:</span>
+<span class="sd">            Index of the agent to send prompts to.</span>
+<span class="sd">        prompts:</span>
+<span class="sd">            List of prompts to send in one batch.</span>
+<span class="sd">        max_tokens:</span>
+<span class="sd">            Optional override for max tokens. If None, uses dynamic sizing</span>
+<span class="sd">            based on average prompt length.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list[Response]</span>
+<span class="sd">            One Response per prompt, in the same order as the input.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">prompts</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="n">ep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_endpoints</span><span class="p">[</span><span class="n">agent_index</span><span class="p">]</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_openai_clients</span><span class="p">[</span><span class="n">agent_index</span><span class="p">]</span>
+
+        <span class="c1"># Compute max_tokens dynamically if not explicitly provided</span>
+        <span class="k">if</span> <span class="n">max_tokens</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Get model&#39;s max context length</span>
+            <span class="n">model_max</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_model_max_context</span><span class="p">()</span>
+
+            <span class="c1"># Estimate tokens based on average prompt length</span>
+            <span class="n">avg_prompt_len</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">prompts</span><span class="p">)</span> <span class="o">//</span> <span class="nb">len</span><span class="p">(</span><span class="n">prompts</span><span class="p">)</span>
+            <span class="n">prompt_est</span> <span class="o">=</span> <span class="n">avg_prompt_len</span> <span class="o">//</span> <span class="mi">4</span>
+
+            <span class="c1"># Dynamic sizing: never exceed model capacity</span>
+            <span class="n">tokens</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_max_tokens</span><span class="p">,</span>
+                <span class="nb">max</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="n">model_max</span> <span class="o">-</span> <span class="n">prompt_est</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buffer</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tokens</span> <span class="o">=</span> <span class="n">max_tokens</span>
+
+        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_semaphore</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Call completions API with batch prompts</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+                    <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="p">,</span>
+                    <span class="n">prompt</span><span class="o">=</span><span class="n">prompts</span><span class="p">,</span>
+                    <span class="n">max_tokens</span><span class="o">=</span><span class="n">tokens</span><span class="p">,</span>
+                <span class="p">)</span>
+
+                <span class="c1"># Map choices to Response objects</span>
+                <span class="n">results</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Response</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">choice</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">choices</span><span class="p">):</span>
+                    <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="n">Response</span><span class="p">(</span>
+                            <span class="n">success</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                            <span class="n">text</span><span class="o">=</span><span class="n">choice</span><span class="o">.</span><span class="n">text</span><span class="p">,</span>
+                            <span class="n">agent_index</span><span class="o">=</span><span class="n">agent_index</span><span class="p">,</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="k">return</span> <span class="n">results</span>
+
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="c1"># On error, return failed Response for each prompt</span>
+                <span class="k">return</span> <span class="p">[</span>
+                    <span class="n">Response</span><span class="p">(</span>
+                        <span class="n">success</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">text</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                        <span class="n">error</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="n">agent_index</span><span class="o">=</span><span class="n">agent_index</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">prompts</span>
+                <span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="VLLMPool.send_all_batched">
+<a class="viewcode-back" href="../../api.html#aurora_swarm.VLLMPool.send_all_batched">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">send_all_batched</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">prompts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">max_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Response</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Send prompts using batch API, grouping by target agent.</span>
+
+<span class="sd">        Groups prompts by their target agent (round-robin based on index),</span>
+<span class="sd">        then sends one batched request per agent. Reconstructs results in</span>
+<span class="sd">        input order.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        prompts:</span>
+<span class="sd">            List of prompts to send.</span>
+<span class="sd">        max_tokens:</span>
+<span class="sd">            Optional max tokens override.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list[Response]</span>
+<span class="sd">            Responses in the same order as input prompts.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_batch</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">prompts</span><span class="p">:</span>
+            <span class="c1"># Fall back to non-batched send_all</span>
+            <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_all</span><span class="p">(</span><span class="n">prompts</span><span class="p">)</span>
+
+        <span class="c1"># Group prompts by target agent</span>
+        <span class="n">groups</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">prompt</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">prompts</span><span class="p">):</span>
+            <span class="n">agent_idx</span> <span class="o">=</span> <span class="n">i</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span>
+            <span class="k">if</span> <span class="n">agent_idx</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">:</span>
+                <span class="n">groups</span><span class="p">[</span><span class="n">agent_idx</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">groups</span><span class="p">[</span><span class="n">agent_idx</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">prompt</span><span class="p">))</span>
+
+        <span class="c1"># Send batched requests concurrently</span>
+        <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">send_group</span><span class="p">(</span><span class="n">agent_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">items</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Response</span><span class="p">]]:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Send batch to one agent, return (original_index, response) pairs.&quot;&quot;&quot;</span>
+            <span class="n">group_prompts</span> <span class="o">=</span> <span class="p">[</span><span class="n">prompt</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">prompt</span> <span class="ow">in</span> <span class="n">items</span><span class="p">]</span>
+            <span class="n">responses</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_batch</span><span class="p">(</span><span class="n">agent_idx</span><span class="p">,</span> <span class="n">group_prompts</span><span class="p">,</span> <span class="n">max_tokens</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[(</span><span class="n">items</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">responses</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">))]</span>
+
+        <span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span><span class="n">send_group</span><span class="p">(</span><span class="n">agent_idx</span><span class="p">,</span> <span class="n">items</span><span class="p">)</span> <span class="k">for</span> <span class="n">agent_idx</span><span class="p">,</span> <span class="n">items</span> <span class="ow">in</span> <span class="n">groups</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+        <span class="n">all_results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">tasks</span><span class="p">)</span>
+
+        <span class="c1"># Flatten and sort by original index</span>
+        <span class="n">indexed_responses</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Response</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">result_group</span> <span class="ow">in</span> <span class="n">all_results</span><span class="p">:</span>
+            <span class="n">indexed_responses</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">result_group</span><span class="p">)</span>
+        <span class="n">indexed_responses</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="c1"># Extract responses in order</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">resp</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">resp</span> <span class="ow">in</span> <span class="n">indexed_responses</span><span class="p">]</span></div>
 
 
     <span class="c1"># -- sub-pool override ---------------------------------------------------</span>
@@ -236,11 +416,13 @@
         <span class="n">child</span><span class="o">.</span><span class="n">_semaphore</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_semaphore</span>
         <span class="n">child</span><span class="o">.</span><span class="n">_session</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_session</span>
         <span class="n">child</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span>
+        <span class="n">child</span><span class="o">.</span><span class="n">_use_batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_batch</span>
         <span class="n">child</span><span class="o">.</span><span class="n">_max_tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_tokens</span>
         <span class="n">child</span><span class="o">.</span><span class="n">_max_tokens_aggregation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_tokens_aggregation</span>
         <span class="n">child</span><span class="o">.</span><span class="n">_model_max_context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model_max_context</span>
         <span class="n">child</span><span class="o">.</span><span class="n">_buffer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buffer</span>
         <span class="n">child</span><span class="o">.</span><span class="n">_model_max_context_cached</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model_max_context_cached</span>
+        <span class="n">child</span><span class="o">.</span><span class="n">_openai_clients</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_openai_clients</span>  <span class="c1"># Share clients</span>
         <span class="k">return</span> <span class="n">child</span></div>
 
 </pre></div>
@@ -272,6 +454,7 @@
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
 <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../batch_prompting.html">Batch Prompting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../context_length.html">Context length configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
 </ul>

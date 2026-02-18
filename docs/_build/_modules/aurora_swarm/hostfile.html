@@ -33,10 +33,10 @@
   <h1>Source code for aurora_swarm.hostfile</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Hostfile parser for Aurora agent endpoints.</span>
 
-<span class="sd">Hostfile format — one agent per line::</span>
+<span class="sd">Hostfile format — one agent per line (tab-delimited)::</span>
 
-<span class="sd">    host1:8000 node=aurora-0001 role=worker</span>
-<span class="sd">    host2:8000 node=aurora-0002 role=critic</span>
+<span class="sd">    host1\t8000\tnode=aurora-0001\trole=worker</span>
+<span class="sd">    host2\t8000\tnode=aurora-0002\trole=critic</span>
 
 <span class="sd">Blank lines and lines starting with ``#`` are ignored.</span>
 <span class="sd">&quot;&quot;&quot;</span>
@@ -84,16 +84,18 @@
             <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span> <span class="ow">or</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
                 <span class="k">continue</span>
-            <span class="n">parts</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
-            <span class="n">host_port</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="k">if</span> <span class="s2">&quot;:&quot;</span> <span class="ow">in</span> <span class="n">host_port</span><span class="p">:</span>
-                <span class="n">host</span><span class="p">,</span> <span class="n">port_str</span> <span class="o">=</span> <span class="n">host_port</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-                <span class="n">port</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">port_str</span><span class="p">)</span>
+            <span class="n">parts</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">host</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c1"># Port is in second column, defaults to 8000 if not provided</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+                <span class="n">port</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">tag_start</span> <span class="o">=</span> <span class="mi">2</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">host</span> <span class="o">=</span> <span class="n">host_port</span>
-                <span class="n">port</span> <span class="o">=</span> <span class="mi">8000</span>  <span class="c1"># default</span>
+                <span class="n">port</span> <span class="o">=</span> <span class="mi">8000</span>
+                <span class="n">tag_start</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="c1"># Parse optional tags from remaining columns</span>
             <span class="n">tags</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-            <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">[</span><span class="n">tag_start</span><span class="p">:]:</span>
                 <span class="k">if</span> <span class="s2">&quot;=&quot;</span> <span class="ow">in</span> <span class="n">token</span><span class="p">:</span>
                     <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
                     <span class="n">tags</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
@@ -127,8 +129,10 @@
     </div>
 </search>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
-<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../batch_prompting.html">Batch Prompting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../context_length.html">Context length configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
 </ul>
 
