@@ -135,11 +135,12 @@ Aurora-Swarm/
 │   ├── api.rst                # API reference (autodoc)
 │   ├── Makefile               # make html
 │   └── _build/                # make html output
+├── extra/                     # Additional documentation (markdown)
+│   ├── BATCH_PROMPTING.md     # Batch prompting implementation guide
+│   ├── BATCH_PROMPTING_QUICKREF.md  # Quick reference for batch API usage
+│   ├── IMPLEMENTATION_SUMMARY.md    # Batch implementation summary and performance results
+│   └── CONTEXT_LENGTH.md      # Context length config and dynamic sizing
 ├── test_batch_integration.py  # Standalone batch vs non-batch comparison
-├── BATCH_PROMPTING.md         # Batch prompting implementation guide
-├── BATCH_PROMPTING_QUICKREF.md
-├── IMPLEMENTATION_SUMMARY.md  # Batch prompting implementation summary
-├── CONTEXT_LENGTH.md          # Context length documentation
 ├── pyproject.toml
 └── README.md                  # This file
 ```
@@ -323,7 +324,9 @@ response = await pool.post(agent_index=0, prompt="...", max_tokens=512)
 
 ## Additional Documentation
 
-- **[BATCH_PROMPTING.md](BATCH_PROMPTING.md)** - Detailed implementation guide for batch prompting feature
-- **[API Reference](https://brettin.github.io/Aurora-Swarm/)** - Full Sphinx documentation with API details
-- **[Context Length Management](docs/context_length.rst)** - Configuration guide for token limits
-- **Integration Tests** - See `tests/integration/` for real-world usage examples
+- **[extra/BATCH_PROMPTING.md](extra/BATCH_PROMPTING.md)** — Batch prompting implementation guide
+- **[extra/BATCH_PROMPTING_QUICKREF.md](extra/BATCH_PROMPTING_QUICKREF.md)** — Batch prompting quick reference
+- **[extra/IMPLEMENTATION_SUMMARY.md](extra/IMPLEMENTATION_SUMMARY.md)** — Batch prompting implementation summary
+- **[extra/CONTEXT_LENGTH.md](extra/CONTEXT_LENGTH.md)** — Context length configuration (full guide)
+- **[API Reference](https://brettin.github.io/Aurora-Swarm/)** — Sphinx API docs and built-in [context length](https://brettin.github.io/Aurora-Swarm/context_length.html) page
+- **Integration Tests** — See `tests/integration/` for real-world usage examples
