@@ -151,11 +151,11 @@ Aurora-Swarm/
 
 ### Hostfile
 
-Agents are listed in a plain-text hostfile, one per line:
+Agents are listed in a plain-text hostfile, one per line. Columns are **tab-delimited**: host, port (optional, default 8000), then optional `key=value` tags.
 
 ```
-host1:8000 node=aurora-0001 role=worker
-host2:8000 node=aurora-0002 role=critic
+host1	8000	node=aurora-0001	role=worker
+host2	8000	node=aurora-0002	role=critic
 # blank lines and comments are ignored
 ```
 
