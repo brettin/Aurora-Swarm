@@ -53,8 +53,9 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Send ``prompts[i]`` to ``agent[i % pool.size]``, gather in input order.</span>
 
 <span class="sd">    If there are more prompts than agents the work wraps round-robin.</span>
+<span class="sd">    Uses batch API when available (VLLMPool) for improved throughput.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="k">await</span> <span class="n">pool</span><span class="o">.</span><span class="n">send_all</span><span class="p">(</span><span class="n">prompts</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="k">await</span> <span class="n">pool</span><span class="o">.</span><span class="n">send_all_batched</span><span class="p">(</span><span class="n">prompts</span><span class="p">)</span></div>
 
 
 
@@ -109,8 +110,10 @@
     </div>
 </search>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
-<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../batch_prompting.html">Batch Prompting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../context_length.html">Context length configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
 </ul>
 

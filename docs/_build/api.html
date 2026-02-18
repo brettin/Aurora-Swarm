@@ -184,6 +184,28 @@ corresponds to <code class="docutils literal notranslate"><span class="pre">prom
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="aurora_swarm.AgentPool.send_all_batched">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">send_all_batched</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_tokens</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/pool.html#AgentPool.send_all_batched"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.AgentPool.send_all_batched" title="Link to this definition">¶</a></dt>
+<dd><p>Send prompts with batching if supported, otherwise use send_all.</p>
+<p>Default implementation for base AgentPool — just delegates to send_all.
+VLLMPool overrides this to use batch API for efficiency.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prompts</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – List of prompts to send.</p></li>
+<li><p><strong>max_tokens</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span>) – Optional max tokens override (ignored in base implementation).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Responses in the same order as input prompts.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="#aurora_swarm.Response" title="aurora_swarm.Response">Response</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="aurora_swarm.AgentPool.broadcast_prompt">
 <span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">broadcast_prompt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/pool.html#AgentPool.broadcast_prompt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.AgentPool.broadcast_prompt" title="Link to this definition">¶</a></dt>
 <dd><p>Send the same <em>prompt</em> to every agent in the pool.</p>
@@ -227,7 +249,7 @@ corresponds to <code class="docutils literal notranslate"><span class="pre">prom
 
 <dl class="py class">
 <dt class="sig sig-object py" id="aurora_swarm.VLLMPool">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">aurora_swarm.</span></span><span class="sig-name descname"><span class="pre">VLLMPool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">endpoints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'openai/gpt-oss-120b'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_tokens</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_tokens_aggregation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_max_context</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">512</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concurrency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">512</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connector_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">300.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/vllm_pool.html#VLLMPool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.VLLMPool" title="Link to this definition">¶</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">aurora_swarm.</span></span><span class="sig-name descname"><span class="pre">VLLMPool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">endpoints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'openai/gpt-oss-120b'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_tokens</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_tokens_aggregation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_max_context</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">512</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_batch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concurrency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">512</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connector_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">300.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/vllm_pool.html#VLLMPool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.VLLMPool" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#aurora_swarm.pool.AgentPool" title="aurora_swarm.pool.AgentPool"><code class="xref py py-class docutils literal notranslate"><span class="pre">AgentPool</span></code></a></p>
 <p>Agent pool that communicates via vLLM’s OpenAI-compatible API.</p>
 <dl class="field-list simple">
@@ -246,6 +268,9 @@ vLLM’s <code class="docutils literal notranslate"><span class="pre">/v1/models
 via <code class="docutils literal notranslate"><span class="pre">AURORA_SWARM_MODEL_MAX_CONTEXT</span></code> env var.</p></li>
 <li><p><strong>buffer</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Safety margin (in tokens) for dynamic sizing to account for
 reasoning overhead. Defaults to 512.</p></li>
+<li><p><strong>use_batch</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – If True, use batch prompting via the completions API for
+send_all_batched. If False, fall back to individual requests.
+Defaults to True.</p></li>
 <li><p><strong>concurrency</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Maximum number of in-flight requests.</p></li>
 <li><p><strong>connector_limit</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Maximum TCP connections in the aiohttp pool.</p></li>
 <li><p><strong>timeout</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Per-request timeout in seconds.</p></li>
@@ -268,6 +293,53 @@ based on prompt length and model context limit.</p></li>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#aurora_swarm.pool.Response" title="aurora_swarm.pool.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="aurora_swarm.VLLMPool.post_batch">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">post_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agent_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_tokens</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/vllm_pool.html#VLLMPool.post_batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.VLLMPool.post_batch" title="Link to this definition">¶</a></dt>
+<dd><p>Send multiple prompts to one agent via the completions API.</p>
+<p>Uses the OpenAI completions endpoint which supports batch prompts
+(a list of strings). This reduces N HTTP requests to 1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>agent_index</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Index of the agent to send prompts to.</p></li>
+<li><p><strong>prompts</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – List of prompts to send in one batch.</p></li>
+<li><p><strong>max_tokens</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span>) – Optional override for max tokens. If None, uses dynamic sizing
+based on average prompt length.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>One Response per prompt, in the same order as the input.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="#aurora_swarm.Response" title="aurora_swarm.Response">Response</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="aurora_swarm.VLLMPool.send_all_batched">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">send_all_batched</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_tokens</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/vllm_pool.html#VLLMPool.send_all_batched"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.VLLMPool.send_all_batched" title="Link to this definition">¶</a></dt>
+<dd><p>Send prompts using batch API, grouping by target agent.</p>
+<p>Groups prompts by their target agent (round-robin based on index),
+then sends one batched request per agent. Reconstructs results in
+input order.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prompts</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – List of prompts to send.</p></li>
+<li><p><strong>max_tokens</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span>) – Optional max tokens override.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Responses in the same order as input prompts.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="#aurora_swarm.Response" title="aurora_swarm.Response">Response</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -488,6 +560,28 @@ corresponds to <code class="docutils literal notranslate"><span class="pre">prom
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="aurora_swarm.pool.AgentPool.send_all_batched">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">send_all_batched</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_tokens</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/pool.html#AgentPool.send_all_batched"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.pool.AgentPool.send_all_batched" title="Link to this definition">¶</a></dt>
+<dd><p>Send prompts with batching if supported, otherwise use send_all.</p>
+<p>Default implementation for base AgentPool — just delegates to send_all.
+VLLMPool overrides this to use batch API for efficiency.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prompts</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – List of prompts to send.</p></li>
+<li><p><strong>max_tokens</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span>) – Optional max tokens override (ignored in base implementation).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Responses in the same order as input prompts.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="#aurora_swarm.pool.Response" title="aurora_swarm.pool.Response">Response</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="aurora_swarm.pool.AgentPool.broadcast_prompt">
 <span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">broadcast_prompt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/pool.html#AgentPool.broadcast_prompt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.pool.AgentPool.broadcast_prompt" title="Link to this definition">¶</a></dt>
 <dd><p>Send the same <em>prompt</em> to every agent in the pool.</p>
@@ -503,10 +597,15 @@ corresponds to <code class="docutils literal notranslate"><span class="pre">prom
 </section>
 <section id="vllm-pool">
 <h3>VLLM pool<a class="headerlink" href="#vllm-pool" title="Link to this heading">¶</a></h3>
-<p><a class="reference internal" href="#aurora_swarm.VLLMPool" title="aurora_swarm.VLLMPool"><code class="xref py py-class docutils literal notranslate"><span class="pre">VLLMPool</span></code></a> is an <a class="reference internal" href="#aurora_swarm.pool.AgentPool" title="aurora_swarm.pool.AgentPool"><code class="xref py py-class docutils literal notranslate"><span class="pre">AgentPool</span></code></a> subclass for vLLM OpenAI-compatible endpoints. It supports config-based and dynamic context length (see <a class="reference internal" href="context_length.html"><span class="doc">Context length configuration</span></a>).</p>
+<p><a class="reference internal" href="#aurora_swarm.VLLMPool" title="aurora_swarm.VLLMPool"><code class="xref py py-class docutils literal notranslate"><span class="pre">VLLMPool</span></code></a> is an <a class="reference internal" href="#aurora_swarm.pool.AgentPool" title="aurora_swarm.pool.AgentPool"><code class="xref py py-class docutils literal notranslate"><span class="pre">AgentPool</span></code></a> subclass for vLLM OpenAI-compatible endpoints. It supports:</p>
+<ul class="simple">
+<li><p>Config-based and dynamic context length (see <a class="reference internal" href="context_length.html"><span class="doc">Context length configuration</span></a>)</p></li>
+<li><p>Batch prompting for high-throughput inference (see <a class="reference internal" href="batch_prompting.html"><span class="doc">Batch Prompting</span></a>)</p></li>
+<li><p>Both <code class="docutils literal notranslate"><span class="pre">/v1/completions</span></code> (batch mode) and <code class="docutils literal notranslate"><span class="pre">/v1/chat/completions</span></code> (non-batch) endpoints</p></li>
+</ul>
 <dl class="py class">
 <dt class="sig sig-object py" id="aurora_swarm.vllm_pool.VLLMPool">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">aurora_swarm.vllm_pool.</span></span><span class="sig-name descname"><span class="pre">VLLMPool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">endpoints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'openai/gpt-oss-120b'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_tokens</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_tokens_aggregation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_max_context</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">512</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concurrency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">512</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connector_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">300.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/vllm_pool.html#VLLMPool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.vllm_pool.VLLMPool" title="Link to this definition">¶</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">aurora_swarm.vllm_pool.</span></span><span class="sig-name descname"><span class="pre">VLLMPool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">endpoints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'openai/gpt-oss-120b'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_tokens</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_tokens_aggregation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_max_context</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">512</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_batch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concurrency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">512</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connector_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">300.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/vllm_pool.html#VLLMPool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.vllm_pool.VLLMPool" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#aurora_swarm.pool.AgentPool" title="aurora_swarm.pool.AgentPool"><code class="xref py py-class docutils literal notranslate"><span class="pre">AgentPool</span></code></a></p>
 <p>Agent pool that communicates via vLLM’s OpenAI-compatible API.</p>
 <dl class="field-list simple">
@@ -525,6 +624,9 @@ vLLM’s <code class="docutils literal notranslate"><span class="pre">/v1/models
 via <code class="docutils literal notranslate"><span class="pre">AURORA_SWARM_MODEL_MAX_CONTEXT</span></code> env var.</p></li>
 <li><p><strong>buffer</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Safety margin (in tokens) for dynamic sizing to account for
 reasoning overhead. Defaults to 512.</p></li>
+<li><p><strong>use_batch</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – If True, use batch prompting via the completions API for
+send_all_batched. If False, fall back to individual requests.
+Defaults to True.</p></li>
 <li><p><strong>concurrency</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Maximum number of in-flight requests.</p></li>
 <li><p><strong>connector_limit</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Maximum TCP connections in the aiohttp pool.</p></li>
 <li><p><strong>timeout</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Per-request timeout in seconds.</p></li>
@@ -547,6 +649,53 @@ based on prompt length and model context limit.</p></li>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#aurora_swarm.pool.Response" title="aurora_swarm.pool.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="aurora_swarm.vllm_pool.VLLMPool.post_batch">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">post_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agent_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_tokens</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/vllm_pool.html#VLLMPool.post_batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.vllm_pool.VLLMPool.post_batch" title="Link to this definition">¶</a></dt>
+<dd><p>Send multiple prompts to one agent via the completions API.</p>
+<p>Uses the OpenAI completions endpoint which supports batch prompts
+(a list of strings). This reduces N HTTP requests to 1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>agent_index</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Index of the agent to send prompts to.</p></li>
+<li><p><strong>prompts</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – List of prompts to send in one batch.</p></li>
+<li><p><strong>max_tokens</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span>) – Optional override for max tokens. If None, uses dynamic sizing
+based on average prompt length.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>One Response per prompt, in the same order as the input.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="#aurora_swarm.Response" title="aurora_swarm.Response">Response</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="aurora_swarm.vllm_pool.VLLMPool.send_all_batched">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">send_all_batched</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_tokens</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/vllm_pool.html#VLLMPool.send_all_batched"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.vllm_pool.VLLMPool.send_all_batched" title="Link to this definition">¶</a></dt>
+<dd><p>Send prompts using batch API, grouping by target agent.</p>
+<p>Groups prompts by their target agent (round-robin based on index),
+then sends one batched request per agent. Reconstructs results in
+input order.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prompts</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – List of prompts to send.</p></li>
+<li><p><strong>max_tokens</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span>) – Optional max tokens override.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Responses in the same order as input prompts.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="#aurora_swarm.Response" title="aurora_swarm.Response">Response</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -688,7 +837,8 @@ replaced with the concatenated agent outputs.</p></li>
 <dt class="sig sig-object py" id="aurora_swarm.patterns.scatter_gather.scatter_gather">
 <span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">aurora_swarm.patterns.scatter_gather.</span></span><span class="sig-name descname"><span class="pre">scatter_gather</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aurora_swarm/patterns/scatter_gather.html#scatter_gather"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aurora_swarm.patterns.scatter_gather.scatter_gather" title="Link to this definition">¶</a></dt>
 <dd><p>Send <code class="docutils literal notranslate"><span class="pre">prompts[i]</span></code> to <code class="docutils literal notranslate"><span class="pre">agent[i</span> <span class="pre">%</span> <span class="pre">pool.size]</span></code>, gather in input order.</p>
-<p>If there are more prompts than agents the work wraps round-robin.</p>
+<p>If there are more prompts than agents the work wraps round-robin.
+Uses batch API when available (VLLMPool) for improved throughput.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<a class="reference internal" href="#aurora_swarm.pool.Response" title="aurora_swarm.pool.Response"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></a>]</span></p>
@@ -913,6 +1063,7 @@ stage receives a dedicated, non-overlapping subset.</p></li>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
 <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="batch_prompting.html">Batch Prompting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="context_length.html">Context length configuration</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">API Reference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#core">Core</a></li>

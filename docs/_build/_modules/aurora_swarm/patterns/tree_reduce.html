@@ -76,7 +76,7 @@
     <span class="c1"># -- leaf phase ----------------------------------------------------------</span>
     <span class="k">if</span> <span class="n">items</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">leaf_prompts</span> <span class="o">=</span> <span class="p">[</span><span class="n">prompt</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{item}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">it</span><span class="p">))</span> <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="n">items</span><span class="p">]</span>
-        <span class="n">leaf_responses</span> <span class="o">=</span> <span class="k">await</span> <span class="n">pool</span><span class="o">.</span><span class="n">send_all</span><span class="p">(</span><span class="n">leaf_prompts</span><span class="p">)</span>
+        <span class="n">leaf_responses</span> <span class="o">=</span> <span class="k">await</span> <span class="n">pool</span><span class="o">.</span><span class="n">send_all_batched</span><span class="p">(</span><span class="n">leaf_prompts</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">leaf_responses</span> <span class="o">=</span> <span class="k">await</span> <span class="n">pool</span><span class="o">.</span><span class="n">broadcast_prompt</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
 
@@ -99,7 +99,7 @@
             <span class="n">supervisor_prompts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filled</span><span class="p">)</span>
 
         <span class="c1"># scatter supervisor work across available agents</span>
-        <span class="n">sup_responses</span> <span class="o">=</span> <span class="k">await</span> <span class="n">pool</span><span class="o">.</span><span class="n">send_all</span><span class="p">(</span><span class="n">supervisor_prompts</span><span class="p">)</span>
+        <span class="n">sup_responses</span> <span class="o">=</span> <span class="k">await</span> <span class="n">pool</span><span class="o">.</span><span class="n">send_all_batched</span><span class="p">(</span><span class="n">supervisor_prompts</span><span class="p">)</span>
         <span class="n">current</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">text</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">sup_responses</span> <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">success</span><span class="p">]</span>
         <span class="n">level</span> <span class="o">+=</span> <span class="mi">1</span>
 
@@ -134,8 +134,10 @@
     </div>
 </search>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
-<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../batch_prompting.html">Batch Prompting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../context_length.html">Context length configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
 </ul>
 

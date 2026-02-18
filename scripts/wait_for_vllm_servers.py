@@ -230,6 +230,8 @@ def main() -> None:
 
     log = _configure_logging(args.quiet)
 
+    log.info("Starting wait for vLLM servers (hostfile=%s)", hostfile_path)
+
     # Phase 1: wait for hostfile
     _wait_for_hostfile(hostfile_path, args.interval, args.hostfile_timeout, log)
 
