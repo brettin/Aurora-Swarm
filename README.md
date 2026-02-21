@@ -71,7 +71,7 @@ python -c "import aurora_swarm; print('aurora_swarm imported successfully')"
 pytest -v
 ```
 
-The tests spin up lightweight mock HTTP servers on localhost so no external agents are needed.
+The tests spin up lightweight mock HTTP servers on localhost so no external agents are needed. Integration tests in `tests/integration/` require a hostfile (see that directory's `conftest.py` or use `pytest --hostfile=/path/to/hostfile`).
 
 ### 7. Build and view the documentation (optional)
 
