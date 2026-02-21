@@ -1,17 +1,17 @@
 #!/bin/bash
 #PBS -N gpt_oss_120b_vllm
-#PBS -l walltime=00:30:00
+#PBS -l walltime=01:00:00
 #PBS -A ModCon
 #PBS -q debug-scaling
 #PBS -o output.log
 #PBS -e error.log
-#PBS -l select=2
+#PBS -l select=4
 #PBS -l filesystems=flare:home
 #PBS -l place=scatter
 #PBS -j oe
 
 # Input/Output configuration
-SCRIPT_DIR="/lus/flare/projects/ModCon/brettin/develop/Aurora-Inferencing/vllm-gpt-oss120b"
+SCRIPT_DIR="/lus/flare/projects/ModCon/brettin/Aurora-Swarm/scripts"
 MODEL_PATH="/lus/flare/projects/datasets/model-weights/hub/models--openai--gpt-oss-120b"
 CONDA_ENV_PATH="/lus/flare/projects/ModCon/brettin/Aurora-Inferencing/vllm-gpt-oss120b/vllm_oss_conda_pack_01082026.tar.gz"
 
