@@ -107,8 +107,10 @@ Aurora-Swarm/
 │       ├── blackboard.py      # Pattern 4 — Blackboard (shared-state)
 │       └── pipeline.py        # Pattern 5 — Pipeline (multi-stage DAG)
 ├── examples/
-│   ├── scatter_gather_coli.py # TOM.COLI gene analysis example
-│   └── context_length_demo.py # Context length configuration demo
+│   ├── broadcast_aggregators.py   # Broadcast to all-but-one + majority_vote/concat
+│   ├── broadcast_aggregators.sh   # Launcher for broadcast_aggregators.py
+│   ├── scatter_gather_coli.py     # TOM.COLI gene analysis example
+│   └── context_length_demo.py    # Context length configuration demo
 ├── scripts/
 │   └── wait_for_vllm_servers.py # Wait for hostfile + healthy vLLM; write filtered hostfile
 ├── tests/
@@ -234,6 +236,8 @@ Built-in aggregation helpers for collected responses:
 - `statistics` — numeric summary (mean, std, median, min, max)
 - `failure_report` — diagnostic summary of successes and failures
 
+See the [Aggregators documentation](https://brettin.github.io/Aurora-Swarm/aggregators.html) for details and the broadcast example.
+
 ---
 
 ## Example: Broadcast and Reduce
@@ -255,6 +259,8 @@ async def main():
 
 asyncio.run(main())
 ```
+
+**See also:** [examples/broadcast_aggregators.py](examples/broadcast_aggregators.py) broadcasts the same prompt to all hosts except one and demonstrates `majority_vote` and `concat` aggregators; run with `examples/broadcast_aggregators.sh <hostfile>`. The full aggregators guide is in the [documentation](https://brettin.github.io/Aurora-Swarm/aggregators.html).
 
 ---
 

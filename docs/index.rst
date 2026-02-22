@@ -38,6 +38,8 @@ VLLMPool supports batch prompting to dramatically reduce HTTP overhead:
 - Enabled by default, transparent to existing code
 - See :doc:`batch_prompting` for details
 
+**Aggregators** — Combine broadcast (or other) responses with :doc:`aggregators` (e.g. ``majority_vote``, ``concat``). See the runnable example ``examples/broadcast_aggregators.py``.
+
 Communication patterns
 ----------------------
 
@@ -67,6 +69,7 @@ Documentation
 
    batch_prompting
    context_length
+   aggregators
    api
 
 Indices and tables

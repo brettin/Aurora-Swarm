@@ -53,6 +53,8 @@ VLLM pool
 Aggregators
 ~~~~~~~~~~~
 
+See :doc:`aggregators` for usage guide and examples.
+
 .. automodule:: aurora_swarm.aggregators
    :members: majority_vote, concat, best_of, top_k, structured_merge, statistics, failure_report
    :undoc-members:
