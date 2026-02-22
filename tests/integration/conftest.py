@@ -56,14 +56,7 @@ def _resolve_hostfile(config) -> Path:
     return SCRIPT_DIR / "hostfile"
 
 
-def pytest_addoption(parser):
-    """Register the ``--hostfile`` command-line option."""
-    parser.addoption(
-        "--hostfile",
-        action="store",
-        default=None,
-        help="Path to the tab-separated vLLM hostfile (hostname<TAB>port).",
-    )
+# --hostfile is registered in tests/conftest.py so it is available when running pytest from repo root.
 
 
 # ---------------------------------------------------------------------------
@@ -90,12 +83,18 @@ def _parse_vllm_hostfile(path: Path) -> list[AgentEndpoint]:
 # ---------------------------------------------------------------------------
 
 def pytest_collection_modifyitems(config, items):
-    """Auto-skip every test in this directory when the hostfile is absent."""
+    """Auto-skip only tests in this directory (integration) when the hostfile is absent."""
     hostfile = _resolve_hostfile(config)
     if not hostfile.exists():
         skip = pytest.mark.skip(reason=f"hostfile not found at {hostfile}")
+        integration_dir = SCRIPT_DIR
         for item in items:
-            item.add_marker(skip)
+            path = getattr(item, "path", None) or getattr(item, "fspath", None)
+            if path is None:
+                continue
+            path = Path(path).resolve()
+            if path.is_relative_to(integration_dir):
+                item.add_marker(skip)
 
 
 # ---------------------------------------------------------------------------

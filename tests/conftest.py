@@ -14,6 +14,16 @@ from aurora_swarm.pool import AgentPool
 from aurora_swarm.vllm_pool import VLLMPool
 
 
+def pytest_addoption(parser):
+    """Register the ``--hostfile`` option for integration tests (used by tests/integration/conftest.py)."""
+    parser.addoption(
+        "--hostfile",
+        action="store",
+        default=None,
+        help="Path to the tab-separated vLLM hostfile for integration tests (hostname<TAB>port).",
+    )
+
+
 # ---------------------------------------------------------------------------
 # Mock agent server
 # ---------------------------------------------------------------------------
