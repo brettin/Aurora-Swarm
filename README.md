@@ -30,7 +30,7 @@ cd Aurora-Swarm
 
 ```bash
 module load frameworks
-conda create -p /lus/flare/projects/ModCon/brettin/conda_envs/swarm
+conda create -p /lus/flare/projects/ModCon/brettin/conda_envs/swarm python=3
 conda activate /lus/flare/projects/ModCon/brettin/conda_envs/swarm
 ```
 
