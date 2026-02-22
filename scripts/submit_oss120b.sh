@@ -11,7 +11,7 @@
 #PBS -j oe
 
 # Input/Output configuration
-SCRIPT_DIR="/lus/flare/projects/ModCon/brettin/develop/Aurora-Inferencing/vllm-gpt-oss120b"
+SCRIPT_DIR="/lus/flare/projects/ModCon/brettin/Aurora-Swarm/scripts"
 MODEL_PATH="/lus/flare/projects/datasets/model-weights/hub/models--openai--gpt-oss-120b"
 CONDA_ENV_PATH="/lus/flare/projects/ModCon/brettin/Aurora-Inferencing/vllm-gpt-oss120b/vllm_oss_conda_pack_01082026.tar.gz"
 
