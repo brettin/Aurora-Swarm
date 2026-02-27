@@ -149,7 +149,10 @@ The following patterns automatically use batching when available:
 
 - ``scatter_gather()`` - Distributes prompts with batching
 - ``map_gather()`` - Uses scatter_gather internally
-- ``tree_reduce()`` - Batches both leaf and supervisor prompts
+
+**Note:** ``tree_reduce()`` uses ``send_all()`` (chat completions) instead of
+batching for both leaf and supervisor phases. This ensures compatibility with
+instruction-tuned models that expect chat-formatted prompts.
 
 Backward Compatibility
 ----------------------

@@ -40,6 +40,8 @@ VLLMPool supports batch prompting to dramatically reduce HTTP overhead:
 
 **Aggregators** — Combine broadcast (or other) responses with :doc:`aggregators` (e.g. ``majority_vote``, ``concat``). See the runnable example ``examples/broadcast_aggregators.py``.
 
+**Tree-Reduce** — See the runnable example ``examples/tree_reduce_example.py``.
+
 Communication patterns
 ----------------------
 

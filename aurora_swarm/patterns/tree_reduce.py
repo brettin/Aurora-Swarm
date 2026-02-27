@@ -7,10 +7,14 @@ answer remains.
 
 from __future__ import annotations
 
-import math
 from typing import Any
 
 from aurora_swarm.pool import AgentPool, Response
+
+
+def _has_content(text: str) -> bool:
+    """Return True if response text has non-whitespace content."""
+    return bool((text or "").strip())
 
 
 async def tree_reduce(
@@ -39,23 +43,26 @@ async def tree_reduce(
         round-robin).  Otherwise the same *prompt* is broadcast.
     """
     # -- leaf phase ----------------------------------------------------------
+    # Use send_all (chat completions per prompt) rather than
+    # send_all_batched (raw completions) so chat models get the
+    # expected message format.
     if items is not None:
         leaf_prompts = [prompt.replace("{item}", str(it)) for it in items]
-        leaf_responses = await pool.send_all_batched(leaf_prompts)
+        leaf_responses = await pool.send_all(leaf_prompts)
     else:
         leaf_responses = await pool.broadcast_prompt(prompt)
 
     # -- reduction phase -----------------------------------------------------
-    current: list[str] = [r.text for r in leaf_responses if r.success]
+    current: list[str] = [
+        r.text for r in leaf_responses if r.success and _has_content(r.text)
+    ]
     level = 1
 
     while len(current) > 1:
-        # chunk into groups of *fanin*
         groups: list[list[str]] = []
         for i in range(0, len(current), fanin):
             groups.append(current[i : i + fanin])
 
-        # each group gets sent to one supervisor agent
         supervisor_prompts: list[str] = []
         for group in groups:
             combined = "\n---\n".join(group)
@@ -63,9 +70,10 @@ async def tree_reduce(
             filled = filled.replace("{level}", str(level))
             supervisor_prompts.append(filled)
 
-        # scatter supervisor work across available agents
-        sup_responses = await pool.send_all_batched(supervisor_prompts)
-        current = [r.text for r in sup_responses if r.success]
+        sup_responses = await pool.send_all(supervisor_prompts)
+        current = [
+            r.text for r in sup_responses if r.success and _has_content(r.text)
+        ]
         level += 1
 
     if not current:

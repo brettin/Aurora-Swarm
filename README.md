@@ -109,7 +109,12 @@ Aurora-Swarm/
 │   ├── broadcast_aggregators.py   # Broadcast to all-but-one + majority_vote/concat
 │   ├── broadcast_aggregators.sh   # Launcher for broadcast_aggregators.py
 │   ├── scatter_gather_coli.py     # TOM.COLI gene analysis example
-│   └── context_length_demo.py    # Context length configuration demo
+│   ├── scatter_gather_coli.sh     # Launcher for scatter_gather_coli.py
+│   ├── tree_reduce_example.py     # Hierarchical tree-reduce summarization
+│   ├── tree_reduce_example.sh     # Launcher for tree_reduce_example.py
+│   ├── blackboard_example.py      # Blackboard pattern with prompt size control
+│   ├── blackboard.sh              # Launcher for blackboard_example.py
+│   └── context_length_demo.py     # Context length configuration demo
 ├── scripts/
 │   └── wait_for_vllm_servers.py # Wait for hostfile + healthy vLLM; write filtered hostfile
 ├── tests/
@@ -219,7 +224,7 @@ See the [Pools and connections](https://brettin.github.io/Aurora-Swarm/pools_and
 - **Without batching:** 10,000 prompts = 10,000 HTTP requests (100 per agent with 100 agents)
 - **With batching:** 10,000 prompts = 100 HTTP requests (1 per agent, each with 100 prompts)
 
-This 100× reduction in request count significantly improves throughput for scatter-gather and tree-reduce patterns. Batch mode is enabled by default in VLLMPool and automatically used by `scatter_gather()` and `tree_reduce()`.
+This 100× reduction in request count significantly improves throughput for scatter-gather patterns. Batch mode is enabled by default in VLLMPool and automatically used by `scatter_gather()` and `map_gather()`.
 
 **Usage:**
 
@@ -271,6 +276,31 @@ asyncio.run(main())
 ```
 
 **See also:** [examples/broadcast_aggregators.py](examples/broadcast_aggregators.py) broadcasts the same prompt to all hosts except one and demonstrates `majority_vote` and `concat` aggregators; run with `examples/broadcast_aggregators.sh <hostfile>`. The full aggregators guide is in the [documentation](https://brettin.github.io/Aurora-Swarm/aggregators.html).
+
+---
+
+## Example: Tree-Reduce
+
+```python
+import asyncio
+from aurora_swarm import VLLMPool, parse_hostfile
+from aurora_swarm.patterns.tree_reduce import tree_reduce
+
+async def main():
+    endpoints = parse_hostfile("agents.hostfile")
+    async with VLLMPool(endpoints, model="meta-llama/Llama-3.1-70B-Instruct") as pool:
+        result = await tree_reduce(
+            pool,
+            prompt="Name one benefit of renewable energy. Keep it to one sentence.",
+            reduce_prompt="Below are several responses. Merge them into a concise summary (level {level}):\n\n{responses}",
+            fanin=4,
+        )
+        print(result.text)
+
+asyncio.run(main())
+```
+
+**See also:** [examples/tree_reduce_example.py](examples/tree_reduce_example.py) supports broadcast mode (same prompt to all) and items mode (scatter different tasks with `{item}` placeholder); run with `examples/tree_reduce_example.sh <hostfile>`.
 
 ---
 
