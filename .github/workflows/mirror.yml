@@ -13,5 +13,5 @@ jobs:
       - uses: yesolutions/mirror-action@v0.7.0
         with:
           REMOTE: 'https://gitlab.osti.gov/genesis/Swarm.git/'
-          GIT_USERNAME: raffenet
+          GIT_USERNAME: brettin 
           GIT_PASSWORD: ${{ secrets.OSTI_GITLAB_TOKEN }}
