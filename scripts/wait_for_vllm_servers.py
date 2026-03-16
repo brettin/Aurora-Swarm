@@ -90,6 +90,7 @@ def _wait_for_hostfile(
                 endpoints = parse_hostfile(path)
                 if endpoints:
                     log.info("Hostfile found at %s with %d endpoints", path, len(endpoints))
+                    log.info("Hosts: %s", ", ".join(f"{ep.host}:{ep.port}" for ep in endpoints))
                     return
                 log.debug("Hostfile exists but is empty or has no valid lines, continuing to poll")
             except Exception as e:
