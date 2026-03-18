@@ -24,6 +24,10 @@ docs = [
     "sphinx>=7.0",
     "sphinx-autodoc-typehints>=2.0",
 ]
+uq = [
+    "numpy>=1.20",
+    "scipy>=1.7",
+]
 
 [tool.setuptools.packages.find]
 include = ["aurora_swarm*"]

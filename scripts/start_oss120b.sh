@@ -14,6 +14,11 @@ VLLM_LOG_DIR="/dev/shm/vllm_logs_${HOSTNAME}_$$"
 
 # VLLM configuration (default to 6739 if not provided)
 VLLM_HOST_PORT=${VLLM_HOST_PORT:-${2:-6739}}
+# Allow overriding tensor-parallel size, dtype, and task via environment.
+# Defaults preserve current gpt-oss-120b behaviour.
+VLLM_TENSOR_PARALLEL_SIZE=${VLLM_TENSOR_PARALLEL_SIZE:-8}
+VLLM_DTYPE=${VLLM_DTYPE:-bfloat16}
+VLLM_TASK=${VLLM_TASK:-}
 
 # Authentication
 export HF_TOKEN=${HF_TOKEN:-}
@@ -95,9 +100,9 @@ export OCL_ICD_FILENAMES="/opt/aurora/25.190.0/oneapi/2025.2/lib/libintelocl.so"
 export VLLM_DISABLE_SINKS=1
 
 #strace -ff -e trace=%file -o /tmp/strace.%p \
-OCL_ICD_FILENAMES="/opt/aurora/25.190.0/oneapi/2025.2/lib/libintelocl.so" VLLM_DISABLE_SINKS=1 vllm serve ${VLLM_MODEL} \
-  --dtype bfloat16 \
-  --tensor-parallel-size 8 \
+OCL_ICD_FILENAMES="/opt/aurora/25.190.0/oneapi/2025.2/lib/libintelocl.so" VLLM_DISABLE_SINKS=1 vllm serve "${VLLM_MODEL}" \
+  --dtype "${VLLM_DTYPE}" \
+  --tensor-parallel-size "${VLLM_TENSOR_PARALLEL_SIZE}" \
   --enforce-eager \
   --distributed-executor-backend mp \
   --trust-remote-code \
