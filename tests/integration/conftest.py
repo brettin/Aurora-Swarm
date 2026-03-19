@@ -26,7 +26,7 @@ from typing import AsyncIterator
 import pytest
 import pytest_asyncio
 
-from aurora_swarm.hostfile import AgentEndpoint
+from aurora_swarm.hostfile import AgentEndpoint, parse_hostfile
 from aurora_swarm.vllm_pool import VLLMPool
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -60,22 +60,16 @@ def _resolve_hostfile(config) -> Path:
 
 
 # ---------------------------------------------------------------------------
-# Hostfile parser (tab-separated: hostname <TAB> port)
+# Hostfile parser (tab-separated: hostname <TAB> port [<TAB> key=value ...])
 # ---------------------------------------------------------------------------
 
 def _parse_vllm_hostfile(path: Path) -> list[AgentEndpoint]:
-    """Parse a tab-separated hostfile and return AgentEndpoint objects."""
-    endpoints: list[AgentEndpoint] = []
-    with open(path) as fh:
-        for line in fh:
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-            parts = line.split("\t")
-            host = parts[0].strip()
-            port = int(parts[1].strip())
-            endpoints.append(AgentEndpoint(host=host, port=port))
-    return endpoints
+    """Parse a tab-separated hostfile and return AgentEndpoint objects.
+
+    Uses the shared aurora_swarm.hostfile.parse_hostfile helper, which
+    supports optional key=value tags in additional columns (e.g. role=...).
+    """
+    return parse_hostfile(path)
 
 
 # ---------------------------------------------------------------------------
